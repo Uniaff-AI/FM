@@ -8,7 +8,6 @@ use App\Http\Controllers\Controller;
 use App\Users\Actions\CreateNewUserAction;
 use App\Users\Requests\RegisterUserRequest;
 use Illuminate\Contracts\Auth\StatefulGuard;
-use VueFileManager\Subscription\Domain\Plans\Exceptions\MeteredBillingPlanDoesntExist;
 
 class RegisterUserController extends Controller
 {
@@ -18,10 +17,9 @@ class RegisterUserController extends Controller
     ) {
     }
 
-    public function __invoke(
-        RegisterUserRequest $request
-    ): JsonResponse {
-        // Check if account registration is enabled
+    public function __invoke(RegisterUserRequest $request): JsonResponse
+    {
+        // Проверка, включена ли регистрация
         if (! intval(get_settings('registration'))) {
             return response()->json([
                 'type'    => 'error',
@@ -29,17 +27,22 @@ class RegisterUserController extends Controller
             ], 401);
         }
 
-        // Map registration data
+        // Маппинг данных регистрации
         $data = CreateUserData::fromArray([
             'name'     => $request->input('name'),
             'email'    => $request->input('email'),
             'password' => $request->input('password'),
+            // Удалите, если не используется
+            // 'role' => $request->input('role'),
+            // 'oauth_provider' => $request->input('oauth_provider'), // если не требуется
+            // 'avatar' => $request->input('avatar'), // если не требуется
         ]);
 
-        // Register user
+        // Регистрация пользователя
         try {
             $user = ($this->createNewUser)($data);
-        } catch (MeteredBillingPlanDoesntExist $e) {
+        } catch (\Exception $e) { // Общий перехват исключений
+            \Log::error('Registration failed: ' . $e->getMessage());
             return response()->json([
                 'type'    => 'error',
                 'message' => 'User registrations are temporarily disabled',
@@ -48,7 +51,7 @@ class RegisterUserController extends Controller
 
         event(new Registered($user));
 
-        // Log in if verification is disabled
+        // Вход пользователя, если верификация отключена
         if (! $user->password || ! intval(get_settings('user_verification'))) {
             $this->guard->login($user);
         }

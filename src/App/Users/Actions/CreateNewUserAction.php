@@ -7,38 +7,40 @@ use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\Registered;
 use Domain\Teams\Models\TeamFolderMember;
 use Domain\Teams\Models\TeamFolderInvitation;
-use VueFileManager\Subscription\Domain\Plans\Models\Plan;
-use VueFileManager\Subscription\Domain\Plans\Exceptions\MeteredBillingPlanDoesntExist;
+// Удалите следующие строки, так как они связаны с тарифными планами
+// use VueFileManager\Subscription\Domain\Plans\Models\Plan;
+// use VueFileManager\Subscription\Domain\Plans\Exceptions\MeteredBillingPlanDoesntExist;
 
 class CreateNewUserAction extends Controller
 {
     public function __construct(
-        protected AutoSubscribeForMeteredBillingAction $autoSubscribeForMeteredBilling,
+        // Удалите зависимость от AutoSubscribeForMeteredBillingAction
+        // protected AutoSubscribeForMeteredBillingAction $autoSubscribeForMeteredBilling,
     ) {
     }
 
     /**
      * Validate and create a new user.
      *
-     * @throws MeteredBillingPlanDoesntExist
+     * @throws \Exception
      */
     public function __invoke(CreateUserData $data): User
     {
-        // Check if subscription metered billing plan exist
-        $this->checkMeteredBillingPlan($data);
+        // Удалите вызов проверки тарифного плана
+        // $this->checkMeteredBillingPlan($data);
 
-        // Create user
+        // Создание пользователя
         $user = $this->createUser($data);
 
-        // Join to previously accepted team folder invitations
+        // Присоединение к ранее принятым приглашениям в командные папки
         $this->applyExistingTeamInvitations($user);
 
-        // Subscribe user for metered billing
-        if (get_settings('subscription_type') === 'metered' && $data->role !== 'admin') {
-            ($this->autoSubscribeForMeteredBilling)($user);
-        }
+        // Удалите автоматическую подписку на metered billing
+        // if (get_settings('subscription_type') === 'metered' && $data->role !== 'admin') {
+        //     ($this->autoSubscribeForMeteredBilling)($user);
+        // }
 
-        // Mark as verified if verification is disabled
+        // Отметить как верифицированного, если верификация отключена
         if (! $data->password || ! intval(get_settings('user_verification'))) {
             $user->markEmailAsVerified();
         }
@@ -47,20 +49,20 @@ class CreateNewUserAction extends Controller
     }
 
     /**
-     * @throws MeteredBillingPlanDoesntExist
+     * Удалите метод checkMeteredBillingPlan, так как он больше не нужен
      */
-    private function checkMeteredBillingPlan(CreateUserData $data): void
-    {
-        if (get_settings('subscription_type') === 'metered' && $data->role !== 'admin') {
-            // Get metered plan
-            $plan = Plan::where('status', 'active')
-                ->where('type', 'metered');
+    // private function checkMeteredBillingPlan(CreateUserData $data): void
+    // {
+    //     if (get_settings('subscription_type') === 'metered' && $data->role !== 'admin') {
+    //         // Get metered plan
+    //         $plan = Plan::where('status', 'active')
+    //             ->where('type', 'metered');
 
-            if ($plan->doesntExist()) {
-                throw new MeteredBillingPlanDoesntExist();
-            }
-        }
-    }
+    //         if ($plan->doesntExist()) {
+    //             throw new MeteredBillingPlanDoesntExist();
+    //         }
+    //     }
+    // }
 
     private function applyExistingTeamInvitations(User $user): void
     {
@@ -86,10 +88,10 @@ class CreateNewUserAction extends Controller
             'email'          => $data->email,
         ]);
 
-        // Split username
+        // Разделение имени
         $name = split_name($data->name);
 
-        // Store user data
+        // Сохранение данных пользователя
         $user->settings()->create([
             'first_name' => $name['first_name'],
             'last_name'  => $name['last_name'],
