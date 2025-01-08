@@ -138,10 +138,7 @@ export default {
                     title: this.$t('menu.password'),
                     route: 'Password',
                 },
-                {
-                    title: this.$t('storage'),
-                    route: 'Storage',
-                },
+
             ]
 
             // Push billing item if subscription is set
