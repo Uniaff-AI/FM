@@ -3,22 +3,29 @@
         <div id="page-content" v-if="!isLoading && data">
 
             <!--Headline-->
+            <!--
             <AppSpecification v-if="config.isAdminVueFileManagerBar" :data="data" class="hidden lg:flex" />
             <AppSpecification v-if="config.isAdminVueFileManagerBar" :data="data" class="card shadow-card lg:hidden" />
+            -->
 
             <!--Create metered plan alert-->
-			<AlertBox v-if="config.subscriptionType === 'metered' && config.isEmptyPlans" color="rose">
-            	As you installed app with metered subscription type, you have to <router-link :to="{ name: 'CreateMeteredPlan' }" class="dark:text-rose-500 text-sm font-bold underline">create your plan</router-link> as soon as possible to prevent new user registration without automatically assigned subscription plan.
-			</AlertBox>
+            <!--
+            <AlertBox v-if="config.subscriptionType === 'metered' && config.isEmptyPlans" color="rose">
+                As you installed app with metered subscription type, you have to <router-link :to="{ name: 'CreateMeteredPlan' }" class="dark:text-rose-500 text-sm font-bold underline">create your plan</router-link> as soon as possible to prevent new user registration without automatically assigned subscription plan.
+            </AlertBox>
+            -->
 
             <!--Cron Alert-->
-			<AlertBox v-if="!data.app.cron.isRunning && !config.isDev" color="rose">
-				<p class="text-sm text-rose-700 dark:text-rose-500">We detect your cron jobs probably doesn't work correctly, please check it, you need it for running app correctly. If you set your cron job, please get back one minute later.</p>
-				<p class="text-sm text-rose-700 dark:text-rose-500 mt-4 font-bold">Command for Shared Web Hosting (Cpanel, Plesk, etc...): <br/> {{ data.app.cron.command.shared }}</p>
-				<p class="text-sm text-rose-700 dark:text-rose-500 mt-4 font-bold">Command for crontab: <br/> {{ data.app.cron.command.vps }}</p>
-			</AlertBox>
+            <!--
+            <AlertBox v-if="!data.app.cron.isRunning && !config.isDev" color="rose">
+                <p class="text-sm text-rose-700 dark:text-rose-500">We detect your cron jobs probably doesn't work correctly, please check it, you need it for running app correctly. If you set your cron job, please get back one minute later.</p>
+                <p class="text-sm text-rose-700 dark:text-rose-500 mt-4 font-bold">Command for Shared Web Hosting (Cpanel, Plesk, etc...): <br/> {{ data.app.cron.command.shared }}</p>
+                <p class="text-sm text-rose-700 dark:text-rose-500 mt-4 font-bold">Command for crontab: <br/> {{ data.app.cron.command.vps }}</p>
+            </AlertBox>
+            -->
 
             <!--Metric widgets-->
+            <!--
             <div class="mb-2 md:mb-6 md:flex md:space-x-6">
                 <div class="card mb-4 w-full shadow-card md:mb-0">
                     <FormLabel icon="users">
@@ -69,8 +76,10 @@
                     </router-link>
                 </div>
             </div>
+            -->
 
             <!--Upload bandwidth widgets-->
+            <!--
             <div class="card mb-4 shadow-card md:mb-6">
                 <FormLabel icon="hard-drive">
                     {{ $t('upload') }}
@@ -86,8 +95,10 @@
 
                 <BarChart :data="data.disk.upload.records" />
             </div>
+            -->
 
             <!--Download bandwidth widgets-->
+            <!--
             <div class="card mb-4 shadow-card md:mb-6">
                 <FormLabel icon="hard-drive">
                     {{ $t('download') }}
@@ -103,6 +114,7 @@
 
                 <BarChart :data="data.disk.download.records" />
             </div>
+            -->
 
             <!--Latest registration widgets-->
             <div class="card mb-4 shadow-card md:mb-6">
@@ -114,6 +126,7 @@
             </div>
 
             <!--Latest transactions widgets-->
+            <!--
             <div
                 v-if="['fixed', 'metered'].includes(this.config.subscriptionType)"
                 class="card mb-4 shadow-card md:mb-6"
@@ -124,6 +137,7 @@
 
                 <WidgetLatestTransactions />
             </div>
+            -->
         </div>
         <div id="loader" v-if="isLoading">
             <Spinner />
@@ -133,11 +147,11 @@
 
 <script>
 import WidgetLatestRegistrations from '../../components/Dashboard/Widgets/WidgetLatestRegistrations'
-import {ChevronRightIcon} from 'vue-feather-icons'
+import { ChevronRightIcon } from 'vue-feather-icons'
 import Spinner from '../../components/UI/Others/Spinner'
 import FormLabel from '../../components/UI/Labels/FormLabel'
 import BarChart from '../../components/UI/BarChart/BarChart'
-import {mapGetters} from 'vuex'
+import { mapGetters } from 'vuex'
 import axios from 'axios'
 import WidgetLatestTransactions from '../../components/Dashboard/Widgets/WidgetLatestTransactions'
 import AlertBox from "../../components/UI/Others/AlertBox";
@@ -146,8 +160,8 @@ import AppSpecification from "../../components/Dashboard/AppSpecification";
 export default {
     name: 'Dashboard',
     components: {
-		AppSpecification,
-		AlertBox,
+        AppSpecification,
+        AlertBox,
         WidgetLatestTransactions,
         WidgetLatestRegistrations,
         ChevronRightIcon,

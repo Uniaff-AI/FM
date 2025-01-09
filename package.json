@@ -7,11 +7,14 @@
         "watch-poll": "mix watch -- --watch-options-poll=1000",
         "hot": "mix watch --hot",
         "prod": "npm run production",
-        "production": "mix --production"
+        "production": "mix --production",
+        "setup:dev": "npm install && npm run dev"
     },
     "devDependencies": {
         "autoprefixer": "^10.4.8",
         "axios": "^0.21.4",
+        "browser-sync": "^3.0.3",
+        "browser-sync-webpack-plugin": "^2.3.0",
         "cross-env": "^5.1",
         "laravel-echo": "^1.13.1",
         "laravel-mix": "^6.0.49",

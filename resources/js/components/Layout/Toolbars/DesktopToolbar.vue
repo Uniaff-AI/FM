@@ -4,25 +4,27 @@
             <NavigationBar />
 
             <div class="flex items-center">
-                <!--Create button-->
-                <PopoverWrapper>
+                <!-- Create button, visible only for admins -->
+                <PopoverWrapper v-if="isAdmin">
                     <ToolbarButton
                         @click.stop.native="showCreateMenu"
                         source="cloud-plus"
                         :action="$t('create_something')"
                     />
                     <PopoverItem name="desktop-create" side="left">
-                        <OptionGroup
-                            :title="$t('frequently_used')"
-                        >
+                        <OptionGroup :title="$t('frequently_used')">
+                            <!-- Кнопка загрузки файлов доступна только для админов -->
                             <OptionUpload
-								:title="$t('upload_files')"
-								type="file"
-								:class="{
+                                v-if="isAdmin"
+                                :title="$t('upload_files')"
+                                type="file"
+                                :class="{
                                     'is-inactive': (isSharedWithMe && !canEdit) || canUploadInView || isTeamFolderHomepage || isSharedWithMeHomepage,
                                 }"
-							/>
+                            />
+                            <!-- Кнопка создания папки доступна только для админов -->
                             <Option
+                                v-if="isAdmin"
                                 @click.native="$createFolder"
                                 :class="{
                                     'is-inactive': (isSharedWithMe && !canEdit) || canCreateFolder || isTeamFolderHomepage || isSharedWithMeHomepage,
@@ -32,39 +34,47 @@
                             />
                         </OptionGroup>
                         <OptionGroup :title="$t('others')">
+                            <!-- Кнопка загрузки папок доступна только для админов -->
                             <OptionUpload
-								:class="{
+                                v-if="isAdmin"
+                                :class="{
                                     'is-inactive': (isSharedWithMe && !canEdit) || canUploadFolderInView || isTeamFolderHomepage || isSharedWithMeHomepage,
                                 }"
-								:title="$t('upload_folder')"
-								type="folder"
-							/>
-							<Option
-								@click.stop.native="$openRemoteUploadPopup"
-								:title="$t('remote_upload')"
-								icon="remote-upload"
-							/>
+                                :title="$t('upload_folder')"
+                                type="folder"
+                            />
+                            <!-- Кнопка удалённой загрузки доступна только для админов -->
                             <Option
-                                @click.stop.native="$createTeamFolder"
+                                v-if="isAdmin"
+                                @click.native="$openRemoteUploadPopup"
+                                :title="$t('remote_upload')"
+                                icon="remote-upload"
+                            />
+                            <!-- Кнопка создания командной папки доступна только для админов -->
+                            <Option
+                                v-if="isAdmin"
+                                @click.native="$createTeamFolder"
                                 :class="{ 'is-inactive': canCreateTeamFolder }"
                                 :title="$t('create_team_folder')"
                                 icon="users"
                             />
-							<Option
-								@click.native="$createFileRequest"
-								:title="$t('create_file_request')"
-								icon="upload-cloud"
-							/>
+                            <!-- Кнопка запроса создания файла доступна только для админов -->
+                            <Option
+                                v-if="isAdmin"
+                                @click.native="$createFileRequest"
+                                :title="$t('create_file_request')"
+                                icon="upload-cloud"
+                            />
                         </OptionGroup>
                     </PopoverItem>
                 </PopoverWrapper>
 
-                <!--Search bar-->
+                <!-- Search bar -->
                 <SearchBarButton class="ml-5 hidden lg:block xl:ml-8" />
 
-                <!--File Controls-->
+                <!-- File Controls -->
                 <div class="ml-5 flex items-center xl:ml-8">
-                    <!--Team Heads-->
+                    <!-- Team Heads -->
                     <PopoverWrapper v-if="$isThisRoute($route, ['TeamFolders', 'SharedWithMe'])">
                         <TeamMembersButton
                             @click.stop.native="showTeamFolderMenu"
@@ -76,12 +86,15 @@
                             <TeamFolderPreview />
 
                             <OptionGroup v-if="$isThisRoute($route, ['TeamFolders'])" :title="$t('options')">
+                                <!-- Опции внутри TeamFolders доступны только для админов -->
                                 <Option
+                                    v-if="isAdmin"
                                     @click.native="$updateTeamFolder(teamFolder)"
                                     :title="$t('edit_members')"
                                     icon="rename"
                                 />
                                 <Option
+                                    v-if="isAdmin"
                                     @click.native="$dissolveTeamFolder(teamFolder)"
                                     :title="$t('dissolve_team')"
                                     icon="trash"
@@ -89,7 +102,9 @@
                             </OptionGroup>
 
                             <OptionGroup v-if="$isThisRoute($route, ['SharedWithMe'])" :title="$t('options')">
+                                <!-- Опции внутри SharedWithMe доступны только для админов -->
                                 <Option
+                                    v-if="isAdmin"
                                     @click.native="$detachMeFromTeamFolder(teamFolder)"
                                     :title="$t('leave_team_folder')"
                                     icon="user-minus"
@@ -98,10 +113,11 @@
                         </PopoverItem>
                     </PopoverWrapper>
 
-                    <!--Action buttons-->
+                    <!-- Action buttons -->
                     <div v-if="!$isMobile()" class="flex items-center">
+                        <!-- Конвертация в командную папку доступна только для админов -->
                         <ToolbarButton
-                            v-if="canShowConvertToTeamFolder"
+                            v-if="isAdmin && canShowConvertToTeamFolder"
                             @click.native="$convertAsTeamFolder(clipboard[0])"
                             :class="{
                                 'is-inactive': !canCreateTeamFolder,
@@ -109,8 +125,9 @@
                             source="user-plus"
                             :action="$t('convert_into_team_folder')"
                         />
+                        <!-- Поделиться доступно только для админов -->
                         <ToolbarButton
-                            v-if="!$isThisRoute($route, ['SharedWithMe', 'Public'])"
+                            v-if="isAdmin && !$isThisRoute($route, ['SharedWithMe', 'Public'])"
                             @click.native="$shareFileOrFolder(clipboard[0])"
                             :class="{
                                 'is-inactive': canShareInView,
@@ -118,7 +135,9 @@
                             source="share"
                             :action="$t('share_item')"
                         />
+                        <!-- Перемещение доступно только для админов -->
                         <ToolbarButton
+                            v-if="isAdmin"
                             @click.native="$moveFileOrFolder(clipboard[0])"
                             :class="{
                                 'is-inactive': canMoveInView && !canEdit,
@@ -126,7 +145,9 @@
                             source="move"
                             :action="$t('move')"
                         />
+                        <!-- Удаление доступно только для админов -->
                         <ToolbarButton
+                            v-if="isAdmin"
                             @click.native="$deleteFileOrFolder(clipboard[0])"
                             :class="{
                                 'is-inactive': canDeleteInView && !canEdit,
@@ -137,7 +158,7 @@
                     </div>
                 </div>
 
-                <!--View Controls-->
+                <!-- View Controls -->
                 <div class="ml-5 flex items-center xl:ml-8">
                     <PopoverWrapper>
                         <ToolbarButton
@@ -156,9 +177,9 @@
                     />
                 </div>
             </div>
-        </div>
 
-        <UploadProgress />
+            <UploadProgress />
+        </div>
     </div>
 </template>
 
@@ -184,7 +205,7 @@ export default {
         FileSortingOptions,
         TeamMembersButton,
         TeamFolderPreview,
-		SearchBarButton,
+        SearchBarButton,
         UploadProgress,
         PopoverWrapper,
         NavigationBar,
@@ -203,6 +224,10 @@ export default {
             'clipboard',
             'user',
         ]),
+        // Вычисляемое свойство для проверки роли администратора
+        isAdmin() {
+            return this.user && this.user.data.attributes.role === 'admin';
+        },
         canEdit() {
             if (this.currentTeamFolder && this.user) {
                 let member = this.currentTeamFolder.data.relationships.members.data.find(

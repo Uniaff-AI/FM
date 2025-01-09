@@ -1,6 +1,11 @@
 <template>
-    <button class="mr-2 inline-block rounded-xl bg-light-background py-2 px-3.5 dark:bg-2x-dark-foreground">
+    <!-- Условное отображение всей кнопки -->
+    <button
+        v-if="shouldDisplayButton"
+        class="mr-2 inline-block rounded-xl bg-light-background py-2 px-3.5 dark:bg-2x-dark-foreground"
+    >
         <div class="flex items-center">
+            <!-- Остальные иконки -->
             <hard-drive-icon v-if="icon === 'hard-drive'" size="15" class="vue-feather dark-text-theme" />
             <upload-cloud-icon v-if="icon === 'upload-cloud'" size="15" class="vue-feather dark-text-theme" />
             <link-icon v-if="icon === 'share'" size="15" class="vue-feather dark-text-theme" />
@@ -24,7 +29,8 @@
             <check-icon v-if="icon === 'check'" size="15" class="vue-feather dark-text-theme" />
             <dollar-sign-icon v-if="icon === 'dollar-sign'" size="15" class="vue-feather dark-text-theme" />
             <sorting-icon v-if="icon === 'preview-sorting'" class="vue-feather dark-text-theme preview-sorting" />
-            <cloud-plus-icon v-if="icon === 'cloud-plus'" class="vue-feather dark-text-theme preview-sorting" />
+            <!-- Иконка cloud-plus доступна только для администраторов -->
+            <cloud-plus-icon v-if="icon === 'cloud-plus' && isAdmin" class="vue-feather dark-text-theme preview-sorting" />
 
             <span v-if="$slots.default" class="ml-2 text-sm font-bold">
                 <slot />
@@ -60,6 +66,7 @@ import {
 } from 'vue-feather-icons'
 import CloudPlusIcon from '../../Icons/CloudPlusIcon'
 import SortingIcon from '../../Icons/SortingIcon'
+import { mapGetters } from 'vuex'
 
 export default {
     name: 'MobileActionButton',
@@ -90,5 +97,17 @@ export default {
         ListIcon,
         GridIcon,
     },
+    computed: {
+        ...mapGetters(['isAdmin']),
+        shouldDisplayButton() {
+            // Если иконка cloud-plus, отображаем кнопку только для администраторов
+            if (this.icon === 'cloud-plus') {
+                return this.isAdmin
+            }
+            // Для всех остальных иконок отображаем кнопку
+            return true
+        },
+    },
 }
 </script>
+

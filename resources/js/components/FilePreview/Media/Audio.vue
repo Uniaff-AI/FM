@@ -3,7 +3,7 @@
         :class="{ 'file-shadow': !$isMobile() }"
         class="file audio"
         :src="file.data.attributes.file_url"
-        controls
+        controls controlsList="nodownload"
     ></audio>
 </template>
 

@@ -1,3 +1,5 @@
+// router.js
+
 import routesUploadRequest from './routes/routesUploadRequest'
 import routesMaintenance from './routes/routesMaintenance'
 import routesShared from './routes/routesShared'
@@ -17,6 +19,11 @@ Vue.use(Router)
 const router = new Router({
     mode: 'history',
     routes: [
+        // Маршрут перенаправления с '/' на 'SignIn'
+        {
+            path: '/',
+            redirect: { name: 'SignIn' },
+        },
         ...routesUploadRequest,
         ...routesMaintenance,
         ...routesShared,
@@ -39,10 +46,11 @@ const router = new Router({
 
 router.beforeEach((to, from, next) => {
     if (to.matched.some((record) => record.meta.requiresAuth)) {
-        // this route requires auth, check if logged in
-        // if not, redirect to login page.
+        // Этот маршрут требует авторизации, проверяем, выполнен ли вход
 
-        let isAuthenticated = store.getters.config ? store.getters.config.isAuthenticated : config.isAuthenticated
+        let isAuthenticated = store.getters.config
+            ? store.getters.config.isAuthenticated
+            : config.isAuthenticated
 
         if (!isAuthenticated) {
             next({
@@ -53,7 +61,7 @@ router.beforeEach((to, from, next) => {
             next()
         }
     } else {
-        next() // make sure to always call next()!
+        next() // Всегда вызывайте next()!
     }
 })
 

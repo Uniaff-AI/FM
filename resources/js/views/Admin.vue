@@ -98,22 +98,7 @@ export default {
         nav() {
             let subscriptionLinks = {
                 metered: [
-                    {
-                        title: this.$t('payments'),
-                        route: 'PaymentSettings',
-                        icon: 'card',
-                    },
-                    {
-                        title: this.$t('plans'),
-                        route: 'Plans',
-                        icon: 'database',
-                        linkActivation: ['plans', 'plan'],
-                    },
-                    {
-                        title: this.$t('transactions'),
-                        route: 'Invoices',
-                        icon: 'file-text',
-                    },
+
                 ],
                 fixed: [
                     {
@@ -156,39 +141,32 @@ export default {
                             icon: 'users',
                             linkActivation: ['users', 'user'],
                         },
-                        {
-                            title: this.$t('settings'),
-                            route: 'AppSettings',
-                            icon: 'settings',
-                        },
+                        // {
+                        //     title: this.$t('settings'),
+                        //     route: 'AppSettings',
+                        //     icon: 'settings',
+                        // },
                     ],
                 },
-                {
-                    groupCollapsable: false,
-                    groupTitle: this.$t('content'),
-                    groupLinks: [
-                        {
-                            title: this.$t('pages'),
-                            route: 'Pages',
-                            icon: 'monitor',
-                        },
-                        {
-                            title: this.$t('languages'),
-                            route: 'Language',
-                            icon: 'globe',
-                        },
-                    ],
-                },
+                // {
+                //     groupCollapsable: false,
+                //     groupTitle: this.$t('content'),
+                //     groupLinks: [
+                //         {
+                //             title: this.$t('pages'),
+                //             route: 'Pages',
+                //             icon: 'monitor',
+                //         },
+                //         {
+                //             title: this.$t('languages'),
+                //             route: 'Language',
+                //             icon: 'globe',
+                //         },
+                //     ],
+                // },
             ]
 
             // Push subscription if there is metered or fixed type
-            if (this.config.subscriptionType !== 'none') {
-                sections.push({
-                    groupCollapsable: false,
-                    groupTitle: this.$t('subscription'),
-                    groupLinks: subscriptionLinks,
-                })
-            }
 
             return sections
         },

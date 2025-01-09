@@ -1,12 +1,6 @@
+// routesIndex.js
+
 const routesIndex = [
-    {
-        name: 'Homepage',
-        path: '/',
-        component: () => import(/* webpackChunkName: "chunks/homepage" */ '../views/Frontpage/Homepage'),
-        meta: {
-            requiresAuth: false,
-        },
-    },
     {
         name: 'DynamicPage',
         path: '/page/:slug',

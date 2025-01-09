@@ -20,8 +20,8 @@
                     </span>
                 </div>
 
-                <!--Context menu handler-->
-                <PopoverWrapper>
+                <!--Context menu handler, visible only for admins-->
+                <PopoverWrapper v-if="isAdmin">
                     <!--Icon-->
                     <span @click.stop="showItemContextMenu" class="-m-3 p-3">
                         <div
@@ -45,19 +45,20 @@
                                 icon="move-item"
                             />
                             <Option
+                                v-if="isAdmin && !$isThisRoute($route, ['Public', 'RequestUpload', 'SharedWithMe'])"
                                 @click.native="$shareFileOrFolder(currentFile)"
                                 :title="sharingTitle"
                                 icon="share"
-                                v-if="!$isThisRoute($route, ['Public', 'RequestUpload', 'SharedWithMe'])"
                             />
                             <Option
+                                v-if="isAdmin"
                                 @click.native="$deleteFileOrFolder(currentFile)"
                                 :title="$t('delete')"
                                 icon="trash"
                                 class="menu-option"
                             />
                         </OptionGroup>
-                        <OptionGroup v-if="!$isThisRoute($route, ['RequestUpload'])">
+                        <OptionGroup v-if="!$isThisRoute($route, ['RequestUpload']) && isAdmin">
                             <Option @click.native="downloadItem" :title="$t('download')" icon="download" />
                         </OptionGroup>
                     </PopoverItem>
@@ -78,21 +79,24 @@
             </div>
 
             <div class="ml-5">
+                <!-- Кнопка загрузки доступна только для админов -->
                 <ToolbarButton
-                    v-if="!$isThisRoute($route, ['RequestUpload'])"
+                    v-if="isAdmin && !$isThisRoute($route, ['RequestUpload'])"
                     @click.native="downloadItem"
                     source="download"
                     :action="$t('download_item')"
                 />
+                <!-- Кнопка поделиться доступна только для админов -->
                 <ToolbarButton
-                    v-if="canShareItem"
+                    v-if="isAdmin && canShareItem"
                     @click.native="$shareFileOrFolder(currentFile)"
                     :class="{ 'is-inactive': !canShareItem }"
                     source="share"
                     :action="$t('share_item')"
                 />
+                <!-- Кнопка печати доступна только для админов -->
                 <ToolbarButton
-                    v-if="isImage"
+                    v-if="isAdmin && isImage"
                     @click.native="printMethod()"
                     source="print"
                     :action="$t('print')"
@@ -125,7 +129,8 @@ export default {
         XIcon,
     },
     computed: {
-        ...mapGetters(['fastPreview', 'clipboard', 'entries']),
+        ...mapGetters(['fastPreview', 'clipboard', 'entries', 'user']), // Добавьте 'user' в mapGetters
+        // Вычисляемое свойство для определения текущего файла
         currentFile() {
             return this.fastPreview ? this.fastPreview : this.clipboard[0]
         },
@@ -167,6 +172,10 @@ export default {
         canShareItem() {
             return this.$isThisRoute(this.$route, ['Files', 'RecentUploads', 'MySharedItems'])
         },
+        // Вычисляемое свойство для проверки роли администратора
+        isAdmin() {
+            return this.user && this.user.data.attributes.role === 'admin';
+        },
     },
     methods: {
         showItemContextMenu() {
@@ -203,3 +212,4 @@ export default {
     },
 }
 </script>
+

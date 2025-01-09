@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="card shadow-card">
-            <div class="mb-6">
+            <div class="mb-6 flex flex-wrap gap-2">
                 <router-link :to="{ name: 'UserCreate' }">
                     <MobileActionButton icon="user-plus">
                         {{ $t('admin_page_user.create_user.submit') }}
@@ -13,7 +13,7 @@
                 </MobileActionButton>
             </div>
 
-            <!--Datatable-->
+            <!-- Datatable -->
             <DatatableWrapper
                 @init="isLoading = false"
                 api="/api/admin/users"
@@ -21,18 +21,16 @@
                 :columns="columns"
                 class="overflow-x-auto"
             >
-                <template slot-scope="{ row }">
-                    <!--Not a subscription-->
+                <template #default="{ row }">
+                    <!-- Not a subscription -->
                     <tr
                         v-if="config.subscriptionType === 'none'"
                         class="whitespace-nowrap border-b border-dashed border-light dark:border-opacity-5"
                     >
+                        <!-- User Details -->
                         <td class="py-3 pr-3 md:pr-1">
                             <router-link
-                                :to="{
-                                    name: 'UserDetail',
-                                    params: { id: row.data.id },
-                                }"
+                                :to="{ name: 'UserDetail', params: { id: row.data.id } }"
                             >
                                 <div class="flex items-center">
                                     <MemberAvatar
@@ -42,7 +40,7 @@
                                     />
                                     <div class="ml-3 pr-10">
                                         <b
-                                            class="max-w-1 block overflow-hidden text-ellipsis whitespace-nowrap text-sm font-bold"
+                                            class="block overflow-hidden text-ellipsis whitespace-nowrap text-sm font-bold"
                                             style="max-width: 155px"
                                         >
                                             {{ row.data.relationships.settings.data.attributes.name }}
@@ -54,45 +52,33 @@
                                 </div>
                             </router-link>
                         </td>
+
+                        <!-- Role -->
                         <td class="px-3 md:px-1">
                             <ColorLabel :color="$getUserRoleColor(row.data.attributes.role)">
                                 {{ $t(row.data.attributes.role) }}
                             </ColorLabel>
                         </td>
-                        <td class="px-3 md:px-1">
-                            <span v-if="row.data.attributes.storage.capacity !== 0" class="text-sm font-bold">
-                                {{ row.data.attributes.storage.used_formatted }}
-                            </span>
-                            <span v-if="row.data.attributes.storage.capacity === 0" class="text-sm font-bold"> - </span>
-                        </td>
-                        <td class="px-3 md:px-1" v-if="config.storageLimit">
-                            <span v-if="row.data.attributes.storage.capacity !== 0" class="text-sm font-bold">
-                                {{ row.data.attributes.storage.capacity_formatted }}
-                            </span>
-                            <span v-if="row.data.attributes.storage.capacity === 0" class="text-sm font-bold"> - </span>
-                        </td>
+
+                        <!-- Created At -->
                         <td class="px-3 md:px-1">
                             <span class="text-sm font-bold">
                                 {{ row.data.attributes.created_at }}
                             </span>
                         </td>
+
+                        <!-- Actions -->
                         <td class="pl-3 text-right md:pl-1">
-                            <div class="flex w-full justify-end space-x-2">
+                            <div class="flex justify-end space-x-2">
                                 <router-link
                                     class="flex h-8 w-8 items-center justify-center rounded-md bg-light-background transition-colors hover:bg-green-100 dark:bg-2x-dark-foreground"
-                                    :to="{
-                                        name: 'UserDetail',
-                                        params: { id: row.data.id },
-                                    }"
+                                    :to="{ name: 'UserDetail', params: { id: row.data.id } }"
                                 >
                                     <Edit2Icon size="15" class="opacity-75" />
                                 </router-link>
                                 <router-link
                                     class="flex h-8 w-8 items-center justify-center rounded-md bg-light-background transition-colors hover:bg-red-100 dark:bg-2x-dark-foreground"
-                                    :to="{
-                                        name: 'UserDelete',
-                                        params: { id: row.data.id },
-                                    }"
+                                    :to="{ name: 'UserDelete', params: { id: row.data.id } }"
                                 >
                                     <Trash2Icon size="15" class="opacity-75" />
                                 </router-link>
@@ -100,17 +86,15 @@
                         </td>
                     </tr>
 
-                    <!--Fixed subscription-->
+                    <!-- Fixed subscription -->
                     <tr
                         v-if="config.subscriptionType === 'fixed'"
                         class="whitespace-nowrap border-b border-dashed border-light dark:border-opacity-5"
                     >
+                        <!-- User Details -->
                         <td class="py-3 pr-3 md:pr-1">
                             <router-link
-                                :to="{
-                                    name: 'UserDetail',
-                                    params: { id: row.data.id },
-                                }"
+                                :to="{ name: 'UserDetail', params: { id: row.data.id } }"
                             >
                                 <div class="flex items-center">
                                     <MemberAvatar
@@ -120,7 +104,7 @@
                                     />
                                     <div class="ml-3 pr-10">
                                         <b
-                                            class="max-w-1 block overflow-hidden text-ellipsis whitespace-nowrap text-sm font-bold"
+                                            class="block overflow-hidden text-ellipsis whitespace-nowrap text-sm font-bold"
                                             style="max-width: 155px"
                                         >
                                             {{ row.data.relationships.settings.data.attributes.name }}
@@ -132,50 +116,33 @@
                                 </div>
                             </router-link>
                         </td>
+
+                        <!-- Role -->
                         <td class="px-3 md:px-1">
                             <ColorLabel :color="$getUserRoleColor(row.data.attributes.role)">
                                 {{ $t(row.data.attributes.role) }}
                             </ColorLabel>
                         </td>
-                        <td class="px-3 md:px-1">
-                            <span class="text-sm font-bold">
-                                {{ row.data.relationships.subscription ? $t('premium') : $t('free') }}
-                            </span>
-                        </td>
-                        <td class="px-3 md:px-1">
-                            <span v-if="row.data.attributes.storage.capacity !== 0" class="text-sm font-bold">
-                                {{ row.data.attributes.storage.used_formatted }}
-                            </span>
-                            <span v-if="row.data.attributes.storage.capacity === 0" class="text-sm font-bold"> - </span>
-                        </td>
-                        <td class="px-3 md:px-1" v-if="config.storageLimit">
-                            <span v-if="row.data.attributes.storage.capacity !== 0" class="text-sm font-bold">
-                                {{ row.data.attributes.storage.capacity_formatted }}
-                            </span>
-                            <span v-if="row.data.attributes.storage.capacity === 0" class="text-sm font-bold"> - </span>
-                        </td>
+
+                        <!-- Created At -->
                         <td class="px-3 md:px-1">
                             <span class="text-sm font-bold">
                                 {{ row.data.attributes.created_at }}
                             </span>
                         </td>
+
+                        <!-- Actions -->
                         <td class="pl-3 text-right md:pl-1">
-                            <div class="flex w-full justify-end space-x-2">
+                            <div class="flex justify-end space-x-2">
                                 <router-link
                                     class="flex h-8 w-8 items-center justify-center rounded-md bg-light-background transition-colors hover:bg-green-100 dark:bg-2x-dark-foreground"
-                                    :to="{
-                                        name: 'UserDetail',
-                                        params: { id: row.data.id },
-                                    }"
+                                    :to="{ name: 'UserDetail', params: { id: row.data.id } }"
                                 >
                                     <Edit2Icon size="15" class="opacity-75" />
                                 </router-link>
                                 <router-link
                                     class="flex h-8 w-8 items-center justify-center rounded-md bg-light-background transition-colors hover:bg-red-100 dark:bg-2x-dark-foreground"
-                                    :to="{
-                                        name: 'UserDelete',
-                                        params: { id: row.data.id },
-                                    }"
+                                    :to="{ name: 'UserDelete', params: { id: row.data.id } }"
                                 >
                                     <Trash2Icon size="15" class="opacity-75" />
                                 </router-link>
@@ -183,17 +150,15 @@
                         </td>
                     </tr>
 
-                    <!--Metered subscription-->
+                    <!-- Metered subscription -->
                     <tr
                         v-if="config.subscriptionType === 'metered'"
                         class="whitespace-nowrap border-b border-dashed border-light dark:border-opacity-5"
                     >
+                        <!-- User Details -->
                         <td class="py-3 pr-3 md:pr-1">
                             <router-link
-                                :to="{
-                                    name: 'UserDetail',
-                                    params: { id: row.data.id },
-                                }"
+                                :to="{ name: 'UserDetail', params: { id: row.data.id } }"
                             >
                                 <div class="flex items-center">
                                     <MemberAvatar
@@ -203,7 +168,7 @@
                                     />
                                     <div class="ml-3 pr-10">
                                         <b
-                                            class="max-w-1 block overflow-hidden text-ellipsis whitespace-nowrap text-sm font-bold"
+                                            class="block overflow-hidden text-ellipsis whitespace-nowrap text-sm font-bold"
                                             style="max-width: 155px"
                                         >
                                             {{ row.data.relationships.settings.data.attributes.name }}
@@ -215,43 +180,33 @@
                                 </div>
                             </router-link>
                         </td>
+
+                        <!-- Role -->
                         <td class="px-3 md:px-1">
                             <ColorLabel :color="$getUserRoleColor(row.data.attributes.role)">
                                 {{ $t(row.data.attributes.role) }}
                             </ColorLabel>
                         </td>
-                        <td class="px-3 md:px-1">
-                            <span class="text-sm font-bold">
-                                {{ row.data.meta.usages ? row.data.meta.usages.featureEstimates.storage.usage : '-' }}
-                            </span>
-                        </td>
-                        <td class="px-3 md:px-1">
-                            <span class="text-sm font-bold">
-                                {{ row.data.meta.usages ? row.data.meta.usages.costEstimate : '-' }}
-                            </span>
-                        </td>
+
+                        <!-- Created At -->
                         <td class="px-3 md:px-1">
                             <span class="text-sm font-bold">
                                 {{ row.data.attributes.created_at }}
                             </span>
                         </td>
+
+                        <!-- Actions -->
                         <td class="pl-3 text-right md:pl-1">
-                            <div class="flex w-full justify-end space-x-2">
+                            <div class="flex justify-end space-x-2">
                                 <router-link
                                     class="flex h-8 w-8 items-center justify-center rounded-md bg-light-background transition-colors hover:bg-green-100 dark:bg-2x-dark-foreground"
-                                    :to="{
-                                        name: 'UserDetail',
-                                        params: { id: row.data.id },
-                                    }"
+                                    :to="{ name: 'UserDetail', params: { id: row.data.id } }"
                                 >
                                     <Edit2Icon size="15" class="opacity-75" />
                                 </router-link>
                                 <router-link
                                     class="flex h-8 w-8 items-center justify-center rounded-md bg-light-background transition-colors hover:bg-red-100 dark:bg-2x-dark-foreground"
-                                    :to="{
-                                        name: 'UserDelete',
-                                        params: { id: row.data.id },
-                                    }"
+                                    :to="{ name: 'UserDelete', params: { id: row.data.id } }"
                                 >
                                     <Trash2Icon size="15" class="opacity-75" />
                                 </router-link>
@@ -261,7 +216,7 @@
                 </template>
             </DatatableWrapper>
         </div>
-        <div id="loader" v-if="isLoading">
+        <div id="loader" v-if="isLoading" class="flex justify-center items-center">
             <Spinner />
         </div>
     </div>
@@ -269,131 +224,52 @@
 
 <script>
 import MemberAvatar from '../../components/UI/Others/MemberAvatar'
-import DatatableCellImage from '../../components/UI/Table/DatatableCellImage'
 import DatatableWrapper from '../../components/UI/Table/DatatableWrapper'
 import MobileActionButton from '../../components/UI/Buttons/MobileActionButton'
-import MobileHeader from '../../components/Mobile/MobileHeader'
-import SectionTitle from '../../components/UI/Labels/SectionTitle'
-import ButtonBase from '../../components/UI/Buttons/ButtonBase'
 import ColorLabel from '../../components/UI/Labels/ColorLabel'
 import Spinner from '../../components/UI/Others/Spinner'
 import { Trash2Icon, Edit2Icon } from 'vue-feather-icons'
 import { mapGetters } from 'vuex'
-import axios from 'axios'
 
 export default {
     name: 'Users',
     components: {
-        DatatableCellImage,
-        MobileActionButton,
         DatatableWrapper,
         MemberAvatar,
-        SectionTitle,
-        MobileHeader,
-        Trash2Icon,
-        ButtonBase,
+        MobileActionButton,
         ColorLabel,
-        Edit2Icon,
         Spinner,
+        Trash2Icon,
+        Edit2Icon,
     },
     computed: {
         ...mapGetters(['config']),
         columns() {
-            return {
-                metered: [
-                    {
-                        label: this.$t('user'),
-                        field: 'email',
-                        sortable: true,
-                    },
-                    {
-                        label: this.$t('role'),
-                        field: 'role',
-                        sortable: true,
-                    },
-                    {
-                        label: this.$t('storage_used'),
-                        sortable: false,
-                    },
-                    {
-                        label: this.$t('billing_est.'),
-                        sortable: false,
-                    },
-                    {
-                        label: this.$t('created_at'),
-                        field: 'created_at',
-                        sortable: true,
-                    },
-                    {
-                        label: this.$t('action'),
-                        sortable: false,
-                    },
-                ],
-                fixed: [
-                    {
-                        label: this.$t('user'),
-                        field: 'email',
-                        sortable: true,
-                    },
-                    {
-                        label: this.$t('role'),
-                        field: 'role',
-                        sortable: true,
-                    },
-                    {
-                        label: this.$t('account'),
-                        sortable: false,
-                    },
-                    {
-                        label: this.$t('storage_used'),
-                        sortable: false,
-                    },
-                    {
-                        label: this.$t('max_storage'),
-                        sortable: false,
-                        hidden: !this.config.storageLimit,
-                    },
-                    {
-                        label: this.$t('created_at'),
-                        field: 'created_at',
-                        sortable: true,
-                    },
-                    {
-                        label: this.$t('action'),
-                        sortable: false,
-                    },
-                ],
-                none: [
-                    {
-                        label: this.$t('user'),
-                        field: 'email',
-                        sortable: true,
-                    },
-                    {
-                        label: this.$t('role'),
-                        field: 'role',
-                        sortable: true,
-                    },
-                    {
-                        label: this.$t('storage_used'),
-                        sortable: false,
-                    },
-                    {
-                        label: this.$t('max_storage'),
-                        sortable: false,
-                        hidden: !this.config.storageLimit,
-                    },
-                    {
-                        label: this.$t('created_at'),
-                        field: 'created_at',
-                        sortable: true,
-                    },
-                    {
-                        label: this.$t('action'),
-                        sortable: false,
-                    },
-                ],
-            }[this.config.subscriptionType]
+            const baseColumns = [
+                {
+                    label: this.$t('user'),
+                    field: 'email',
+                    sortable: true,
+                },
+                {
+                    label: this.$t('role'),
+                    field: 'role',
+                    sortable: true,
+                },
+                {
+                    label: this.$t('created_at'),
+                    field: 'created_at',
+                    sortable: true,
+                },
+                {
+                    label: this.$t('action'),
+                    sortable: false,
+                },
+            ]
+
+            // Если у вас есть специфические колонки для разных типов подписки, добавьте их здесь.
+            // В данном случае, мы удаляем все дополнительные колонки, поэтому возвращаем базовые.
+            return baseColumns
         },
     },
     data() {
