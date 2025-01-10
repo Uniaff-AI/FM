@@ -1,5 +1,7 @@
+<!-- MobileContextMenu.vue -->
 <template>
-    <MenuMobile name="file-menu">
+    <!-- Отображать MenuMobile только если пользователь является администратором -->
+    <MenuMobile v-if="isAdmin" name="file-menu">
         <ThumbnailItem class="m-5" :item="clipboard[0]" />
 
         <MenuMobileGroup v-if="$slots.default">
@@ -30,7 +32,14 @@ export default {
         MenuMobile,
     },
     computed: {
-        ...mapGetters(['clipboard']),
+        ...mapGetters(['clipboard', 'user']),
+
+        /**
+         * Проверка, является ли пользователь администратором
+         */
+        isAdmin() {
+            return this.user && this.user.data.attributes.role === 'admin';
+        },
     },
 }
 </script>

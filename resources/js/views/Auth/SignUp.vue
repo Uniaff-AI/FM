@@ -11,6 +11,8 @@
                 tag="form"
                 class="mb-12 space-y-4 text-left"
             >
+                <!-- Поля формы регистрации -->
+
                 <div class="mx-auto mb-5 md:flex md:max-w-lg md:items-center">
                     <label class="mb-1.5 block font-bold md:mb-0 md:w-72 md:pr-4 md:text-right">
                         {{ $t('email') }}:
@@ -20,7 +22,7 @@
                         mode="passive"
                         class="w-full text-left"
                         name="E-Mail"
-                        rules="required"
+                        rules="required|email"
                         v-slot="{ errors }"
                     >
                         <input
@@ -66,7 +68,7 @@
                         mode="passive"
                         class="w-full text-left"
                         name="Your New Password"
-                        rules="required"
+                        rules="required|min:6"
                         v-slot="{ errors }"
                     >
                         <input
@@ -89,7 +91,7 @@
                         mode="passive"
                         class="w-full text-left"
                         name="Confirm Your Password"
-                        rules="required"
+                        rules="required|confirmed:password"
                         v-slot="{ errors }"
                     >
                         <input
@@ -104,28 +106,7 @@
                 </div>
 
                 <div class="text-center">
-                    <i18n path="page_registration.agreement" tag="p" class="mx-auto mt-12 mb-6 w-96 font-bold">
-                        <router-link
-                            :to="{
-                                name: 'DynamicPage',
-                                params: { slug: 'terms-of-service' },
-                            }"
-                            target="_blank"
-                            class="text-theme"
-                        >
-                            {{ termsOfService.title }}
-                        </router-link>
-                        <router-link
-                            :to="{
-                                name: 'DynamicPage',
-                                params: { slug: 'privacy-policy' },
-                            }"
-                            target="_blank"
-                            class="text-theme"
-                        >
-                            {{ privacyPolicy.title }}
-                        </router-link>
-                    </i18n>
+                    <!-- Удалённый блок с соглашением -->
                     <AuthButton
                         class="w-full justify-center md:w-min"
                         icon="chevron-right"
@@ -138,8 +119,8 @@
 
             <SocialLoginButtons />
 
-            <span class="block"
-                >{{ $t('page_registration.have_an_account') }}
+            <span class="block">
+                {{ $t('page_registration.have_an_account') }}
                 <router-link :to="{ name: 'SignIn' }" class="text-theme font-bold">
                     {{ $t('log_in') }}
                 </router-link>
@@ -155,7 +136,8 @@ import { ValidationProvider, ValidationObserver } from 'vee-validate/dist/vee-va
 import AuthContent from '../../components/Layout/AuthPages/AuthContent'
 import AuthButton from '../../components/UI/Buttons/AuthButton'
 import SocialLoginButtons from '../../components/UI/Buttons/SocialLoginButtons'
-import { required } from 'vee-validate/dist/rules'
+import { required, email, min, confirmed } from 'vee-validate/dist/rules'
+import { extend } from 'vee-validate'
 import { mapGetters } from 'vuex'
 import { events } from '../../bus'
 import axios from 'axios'
@@ -170,7 +152,6 @@ export default {
         AuthContent,
         AuthButton,
         Headline,
-        required,
     },
     computed: {
         ...mapGetters(['config']),
@@ -208,12 +189,12 @@ export default {
             this.isLoading = true
 
             // Get ReCaptcha token
-			if (this.config.allowedRecaptcha) {
-				this.register.reCaptcha = await this.$reCaptchaToken('register')
-					.then((response) => response)
-			}
+            if (this.config.allowedRecaptcha) {
+                this.register.reCaptcha = await this.$reCaptchaToken('register')
+                    .then((response) => response)
+            }
 
-            // Send request to get user token
+            // Send request to register user
             axios
                 .post('/api/register', this.register)
                 .then(() => {
@@ -221,71 +202,103 @@ export default {
                         // Set login state
                         this.$store.commit('SET_AUTHORIZED', true)
 
-                        // Go to files page
+                        // Navigate to files page
                         this.$router.push({ name: 'Files' })
                     } else {
-                        // Go to SuccessfullySend page
+                        // Navigate to SuccessfullySend page
                         this.$router.push({ name: 'SuccessfullySend' })
                     }
                 })
                 .catch((error) => {
-                    if (error.response.status === 500) {
-						events.$emit('alert:open', {
-							title: this.$t('popup_error.title'),
-							message: this.$t('popup_error.message'),
-						})
-                    }
+                    if (error.response) {
+                        const { status, data } = error.response
 
-					if (error.response.status === 409) {
-
-						events.$emit('alert:open', {
-							title: error.response.data.message,
-						})
-					}
-
-                    if (error.response.status === 422) {
-                        if (error.response.data.errors['email']) {
-                            this.$refs.sign_up.setErrors({
-                                'E-Mail': error.response.data.errors['email'],
+                        if (status === 500) {
+                            events.$emit('alert:open', {
+                                title: this.$t('popup_error.title'),
+                                message: this.$t('popup_error.message'),
                             })
                         }
 
-                        if (error.response.data.errors['password']) {
-                            this.$refs.sign_up.setErrors({
-                                'Your New Password': error.response.data.errors['password'],
+                        if (status === 409) {
+                            events.$emit('alert:open', {
+                                title: data.message,
                             })
                         }
 
-                        if (error.response.data.errors['reCaptcha']) {
-							events.$emit('alert:open', {
-								title: error.response.data.message,
-							})
+                        if (status === 422) {
+                            const errors = {}
+
+                            if (data.errors['email']) {
+                                errors['E-Mail'] = data.errors['email']
+                            }
+
+                            if (data.errors['password']) {
+                                errors['Your New Password'] = data.errors['password']
+                            }
+
+                            if (data.errors['reCaptcha']) {
+                                events.$emit('alert:open', {
+                                    title: data.message,
+                                })
+                            }
+
+                            this.$refs.sign_up.setErrors(errors)
                         }
+                    } else {
+                        // Handle network or other errors
+                        events.$emit('alert:open', {
+                            title: this.$t('popup_error.title'),
+                            message: this.$t('popup_error.network_error'),
+                        })
                     }
                 })
-				.finally(() => {
+                .finally(() => {
                     // End loading
                     this.isLoading = false
-				})
+                })
         },
     },
     created() {
         this.$scrollTop()
 
-		// Redirect if user is authenticated
-		if (this.$root.$data.config.isAuthenticated) {
-			this.$router.push({name: 'Files'})
-		}
+        // Redirect if user is authenticated
+        if (this.$root.$data.config.isAuthenticated) {
+            this.$router.push({ name: 'Files' })
+        }
 
-		if (this.config.isPrefilledUsers) {
-			this.register = {
-				name: 'John Doe',
-				email: 'demo-' + Math.floor(Math.random() * 100000) + '@doe.com',
-				password: 'vuefilemanager',
-				password_confirmation: 'vuefilemanager',
-				reCaptcha: null,
-			}
-		}
+        if (this.config.isPrefilledUsers) {
+            this.register = {
+                name: 'John Doe',
+                email: 'demo-' + Math.floor(Math.random() * 100000) + '@doe.com',
+                password: 'vuefilemanager',
+                password_confirmation: 'vuefilemanager',
+                reCaptcha: null,
+            }
+        }
     },
 }
+
+// Добавляем валидации
+extend('required', {
+    ...required,
+    message: 'Это поле обязательно.',
+})
+
+extend('email', {
+    ...email,
+    message: 'Введите корректный email.',
+})
+
+extend('min', {
+    ...min,
+    message: 'Пароль должен содержать как минимум {length} символов.',
+})
+
+extend('confirmed', {
+    ...confirmed,
+    message: 'Пароли не совпадают.',
+})
 </script>
+
+

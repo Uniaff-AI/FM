@@ -1,3 +1,4 @@
+<!-- ContextMenu.vue -->
 <template>
     <div
         v-show="isVisible"
@@ -7,14 +8,14 @@
         ref="contextmenu"
     >
         <div class="w-full">
-            <!--Show empty select contextmenu-->
+            <!-- Показать контекстное меню для пустого выбора -->
             <slot name="empty-select" v-if="!item" />
 
-            <!--Show single select contextmenu-->
-            <slot name="single-select" v-if="isMultiSelectContextMenu" />
+            <!-- Показать контекстное меню для одиночного выбора -->
+            <slot name="single-select" v-if="isSingleSelectContextMenu" />
 
-            <!--Show multiple select contextmenu-->
-            <slot name="multiple-select" v-if="!isMultiSelectContextMenu" />
+            <!-- Показать контекстное меню для множественного выбора -->
+            <slot name="multiple-select" v-else />
         </div>
     </div>
 </template>
@@ -28,17 +29,22 @@ export default {
     computed: {
         ...mapGetters(['clipboard', 'user']),
 
-        // Новое вычисляемое свойство для проверки роли
+        /**
+         * Проверка, является ли пользователь администратором
+         */
         isAdmin() {
             return this.user && this.user.data.attributes.role === 'admin';
         },
 
-        isMultiSelectContextMenu() {
-            // Если контекстное меню открыто для нескольких выбранных элементов, отображаем соответствующие опции
-            if (this.clipboard.length > 1 && this.clipboard.includes(this.item)) return false
+        /**
+         * Определение, для какого типа выбора отображать контекстное меню
+         */
+        isSingleSelectContextMenu() {
+            // Логика отображения для нескольких элементов
+            if (this.clipboard.length > 1 && this.clipboard.includes(this.item)) return false;
 
-            // Если контекстное меню открыто для одного элемента, отображаем соответствующие опции
-            if (this.clipboard.length < 2 || !this.clipboard.includes(this.item)) return true
+            // Логика отображения для одного элемента
+            if (this.clipboard.length < 2 || !this.clipboard.includes(this.item)) return true;
         },
     },
     data() {
@@ -50,13 +56,18 @@ export default {
         }
     },
     methods: {
+        /**
+         * Закрыть контекстное меню и сбросить выбранный элемент
+         */
         closeAndResetContextMenu() {
-            // Закрыть контекстное меню
-            this.isVisible = false
-
-            // Сбросить выбранный элемент
-            this.item = undefined
+            this.isVisible = false;
+            this.item = undefined;
         },
+
+        /**
+         * Показать контекстное меню
+         * @param {MouseEvent} event - Событие клика мыши
+         */
         showContextMenu(event) {
             // Проверка роли пользователя
             if (!this.isAdmin) {
@@ -64,30 +75,29 @@ export default {
             }
 
             // Показать контекстное меню
-            this.isVisible = true
+            this.isVisible = true;
+            this.positionX = event.clientX;
+            this.positionY = event.clientY;
 
-            // Установить начальную позицию меню
-            this.positionX = event.clientX
-            this.positionY = event.clientY
-
-            // Обновление DOM и корректировка позиции меню, если оно выходит за пределы окна
+            // Корректировка позиции меню, чтобы оно не выходило за пределы окна
             this.$nextTick(() => {
-                const menu = this.$refs.contextmenu
+                const menu = this.$refs.contextmenu;
                 if (!menu) {
-                    console.error('Элемент contextmenu не найден.')
-                    return
+                    console.error('Элемент contextmenu не найден.');
+                    return;
                 }
 
-                const hiddenAreaX = window.innerWidth - event.clientX - menu.clientWidth - 25
-                const hiddenAreaY = window.innerHeight - event.clientY - menu.clientHeight - 25
+                const hiddenAreaX = window.innerWidth - event.clientX - menu.clientWidth - 25;
+                const hiddenAreaY = window.innerHeight - event.clientY - menu.clientHeight - 25;
 
-                this.positionX = hiddenAreaX < 0 ? event.clientX + hiddenAreaX : event.clientX
-                this.positionY = hiddenAreaY < 0 ? event.clientY + hiddenAreaY : event.clientY
-            })
+                this.positionX = hiddenAreaX < 0 ? event.clientX + hiddenAreaX : event.clientX;
+                this.positionY = hiddenAreaY < 0 ? event.clientY + hiddenAreaY : event.clientY;
+            });
         },
     },
     created() {
-        events.$on('context-menu:hide', () => this.closeAndResetContextMenu())
+        // Подписка на события для управления контекстным меню
+        events.$on('context-menu:hide', this.closeAndResetContextMenu);
 
         events.$on('context-menu:show', (event, item) => {
             // Проверка роли пользователя перед отображением контекстного меню
@@ -96,11 +106,11 @@ export default {
             }
 
             // Сохранить выбранный элемент
-            this.item = item
+            this.item = item;
 
             // Показать контекстное меню
-            this.showContextMenu(event)
-        })
+            this.showContextMenu(event);
+        });
 
         events.$on('context-menu:current-folder', (folder) => {
             // Проверка роли пользователя перед отображением контекстного меню
@@ -108,17 +118,29 @@ export default {
                 return; // Если не админ, игнорируем событие
             }
 
-            this.item = folder
-
-            this.isVisible = !this.isVisible
+            this.item = folder;
+            this.isVisible = !this.isVisible;
 
             if (this.isVisible) {
-                let container = document.getElementById('folder-actions').getBoundingClientRect()
-
-                this.positionX = container.x
-                this.positionY = container.y + 20
+                const container = document.getElementById('folder-actions').getBoundingClientRect();
+                this.positionX = container.x;
+                this.positionY = container.y + 20;
             }
-        })
+        });
+
+        // Добавление обработчика события закрытия контекстного меню при клике вне его
+        document.addEventListener('click', this.closeAndResetContextMenu);
+    },
+    beforeDestroy() {
+        // Удаление обработчиков событий при уничтожении компонента
+        events.$off('context-menu:hide', this.closeAndResetContextMenu);
+        events.$off('context-menu:show');
+        events.$off('context-menu:current-folder');
+        document.removeEventListener('click', this.closeAndResetContextMenu);
     },
 }
 </script>
+
+<style scoped>
+/* Ваши стили */
+</style>

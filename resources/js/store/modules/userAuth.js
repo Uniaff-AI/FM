@@ -56,7 +56,7 @@ const actions = {
                 commit('SET_AUTHORIZED', false)
 
                 // Get redirect location
-                let redirectLocation = getters.config.allowHomepage ? 'Homepage' : 'SignIn'
+                let redirectLocation = getters.config.allowHomepage ? 'SignIn' : 'SignIn'
 
                 // Redirect user
                 router.push({name: redirectLocation})

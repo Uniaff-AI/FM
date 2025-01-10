@@ -10,6 +10,7 @@ mix
         require("tailwindcss"),
     ])
     .webpackConfig({
+        devtool: 'source-map', // Обеспечивает полные источники карт
         output: {
             chunkFilename: '[name].js?id=[chunkhash]',
         },
