@@ -40,18 +40,8 @@
                         {{ $t(row.data.attributes.role) }}
                     </ColorLabel>
                 </td>
-                <td class="px-3 md:px-1">
-                    <span v-if="row.data.attributes.storage.capacity !== 0" class="text-sm font-bold">
-                        {{ row.data.attributes.storage.used_formatted }}
-                    </span>
-                    <span v-if="row.data.attributes.storage.capacity === 0" class="text-sm font-bold"> - </span>
-                </td>
-                <td class="px-3 md:px-1" v-if="config.storageLimit">
-                    <span v-if="row.data.attributes.storage.capacity !== 0" class="text-sm font-bold">
-                        {{ row.data.attributes.storage.capacity_formatted }}
-                    </span>
-                    <span v-if="row.data.attributes.storage.capacity === 0" class="text-sm font-bold"> - </span>
-                </td>
+                <!-- Удален столбец "Используемое хранилище" -->
+                <!-- Удален столбец "Расчетный счет" -->
                 <td class="px-3 md:px-1">
                     <span class="text-sm font-bold">
                         {{ row.data.attributes.created_at }}
@@ -114,23 +104,8 @@
                         {{ $t(row.data.attributes.role) }}
                     </ColorLabel>
                 </td>
-                <td class="px-3 md:px-1" v-if="config.subscriptionType === 'fixed'">
-                    <span class="text-sm font-bold">
-                        {{ row.data.relationships.subscription ? $t('premium') : $t('free') }}
-                    </span>
-                </td>
-                <td class="px-3 md:px-1">
-                    <span v-if="row.data.attributes.storage.capacity !== 0" class="text-sm font-bold">
-                        {{ row.data.attributes.storage.used_formatted }}
-                    </span>
-                    <span v-if="row.data.attributes.storage.capacity === 0" class="text-sm font-bold"> - </span>
-                </td>
-                <td class="px-3 md:px-1" v-if="config.storageLimit">
-                    <span v-if="row.data.attributes.storage.capacity !== 0" class="text-sm font-bold">
-                        {{ row.data.attributes.storage.capacity_formatted }}
-                    </span>
-                    <span v-if="row.data.attributes.storage.capacity === 0" class="text-sm font-bold"> - </span>
-                </td>
+                <!-- Удален столбец "Используемое хранилище" -->
+                <!-- Удален столбец "Макс. хранилище" -->
                 <td class="px-3 md:px-1">
                     <span class="text-sm font-bold">
                         {{ row.data.attributes.created_at }}
@@ -193,16 +168,8 @@
                         {{ $t(row.data.attributes.role) }}
                     </ColorLabel>
                 </td>
-                <td class="px-3 md:px-1">
-                    <span class="text-sm font-bold">
-                        {{ row.data.meta.usages ? row.data.meta.usages.featureEstimates.storage.usage : '-' }}
-                    </span>
-                </td>
-                <td class="px-3 md:px-1">
-                    <span class="text-sm font-bold">
-                        {{ row.data.meta.usages ? row.data.meta.usages.costEstimate : '-' }}
-                    </span>
-                </td>
+                <!-- Удален столбец "Используемое хранилище" -->
+                <!-- Удален столбец "Расчетный счет" -->
                 <td class="px-3 md:px-1">
                     <span class="text-sm font-bold">
                         {{ row.data.attributes.created_at }}
@@ -269,14 +236,8 @@ export default {
                         field: 'role',
                         sortable: true,
                     },
-                    {
-                        label: this.$t('storage_used'),
-                        sortable: false,
-                    },
-                    {
-                        label: this.$t('billing_est.'),
-                        sortable: false,
-                    },
+                    // Удален столбец "Используемое хранилище"
+                    // Удален столбец "Расчетный счет"
                     {
                         label: this.$t('created_at'),
                         field: 'created_at',
@@ -298,15 +259,8 @@ export default {
                         field: 'role',
                         sortable: true,
                     },
-                    {
-                        label: this.$t('storage_used'),
-                        sortable: false,
-                    },
-                    {
-                        label: this.$t('max_storage'),
-                        sortable: false,
-                        hidden: !this.config.storageLimit,
-                    },
+                    // Удален столбец "Используемое хранилище"
+                    // Удален столбец "Макс. хранилище"
                     {
                         label: this.$t('created_at'),
                         field: 'created_at',
@@ -328,15 +282,8 @@ export default {
                         field: 'role',
                         sortable: true,
                     },
-                    {
-                        label: this.$t('storage_used'),
-                        sortable: false,
-                    },
-                    {
-                        label: this.$t('max_storage'),
-                        sortable: false,
-                        hidden: !this.config.storageLimit,
-                    },
+                    // Удален столбец "Используемое хранилище"
+                    // Удален столбец "Макс. хранилище"
                     {
                         label: this.$t('created_at'),
                         field: 'created_at',

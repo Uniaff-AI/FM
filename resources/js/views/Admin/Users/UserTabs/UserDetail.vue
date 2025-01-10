@@ -1,6 +1,6 @@
 <template>
     <PageTab>
-        <!--Change role-->
+        <!-- Раздел "Изменение роли" -->
         <div class="card shadow-card">
             <FormLabel>
                 {{ $t('user_box_role.title') }}
@@ -34,12 +34,14 @@
                 </ValidationProvider>
             </ValidationObserver>
         </div>
+
+        <!-- Раздел "Персональная информация" -->
         <div class="card shadow-card">
             <FormLabel>
                 {{ $t('admin_page_user.label_person_info') }}
             </FormLabel>
 
-            <!--Name-->
+            <!-- Имя и Фамилия -->
             <div class="justify-items md:flex md:space-x-4">
                 <AppInputText :title="$t('first_name')" class="w-full">
                     <input
@@ -61,6 +63,7 @@
                 </AppInputText>
             </div>
 
+            <!-- Полное Имя -->
             <AppInputText :title="$t('full_name')" :is-last="true">
                 <input
                     :value="user.data.relationships.settings.data.attributes.name"
@@ -71,67 +74,8 @@
                 />
             </AppInputText>
         </div>
-        <div class="card shadow-card">
-            <FormLabel>{{ $t('billing_information') }}</FormLabel>
-            <AppInputText :title="$t('name')">
-                <input
-                    :value="user.data.relationships.settings.data.attributes.name"
-                    type="text"
-                    class="focus-border-theme input-dark disabled:text-gray-900 disabled:opacity-100"
-                    disabled
-                />
-            </AppInputText>
-            <AppInputText :title="$t('address')">
-                <input
-                    :value="user.data.relationships.settings.data.attributes.address"
-                    type="text"
-                    disabled
-                    class="focus-border-theme input-dark disabled:text-gray-900 disabled:opacity-100"
-                />
-            </AppInputText>
-            <AppInputText :title="$t('country')">
-                <input
-                    :value="user.data.relationships.settings.data.attributes.country"
-                    type="text"
-                    disabled
-                    class="focus-border-theme input-dark disabled:text-gray-900 disabled:opacity-100"
-                />
-            </AppInputText>
-            <div class="flex space-x-4">
-                <AppInputText :title="$t('city')" class="w-full">
-                    <input
-                        :value="user.data.relationships.settings.data.attributes.city"
-                        type="text"
-                        disabled
-                        class="focus-border-theme input-dark disabled:text-gray-900 disabled:opacity-100"
-                    />
-                </AppInputText>
-                <AppInputText :title="$t('postal_code')" class="w-full">
-                    <input
-                        :value="user.data.relationships.settings.data.attributes.postal_code"
-                        type="text"
-                        disabled
-                        class="focus-border-theme input-dark disabled:text-gray-900 disabled:opacity-100"
-                    />
-                </AppInputText>
-            </div>
-            <AppInputText :title="$t('state')">
-                <input
-                    :value="user.data.relationships.settings.data.attributes.state"
-                    type="text"
-                    disabled
-                    class="focus-border-theme input-dark disabled:text-gray-900 disabled:opacity-100"
-                />
-            </AppInputText>
-            <AppInputText :title="$t('phone_number')" :is-last="true">
-                <input
-                    :value="user.data.relationships.settings.data.attributes.phone_number"
-                    type="text"
-                    disabled
-                    class="focus-border-theme input-dark disabled:text-gray-900 disabled:opacity-100"
-                />
-            </AppInputText>
-        </div>
+
+        <!-- Раздел "Информация для выставления счета" Удален -->
     </PageTab>
 </template>
 
@@ -183,7 +127,7 @@ export default {
 
             this.isSendingRequest = true
 
-            // Send request to get user reset link
+            // Send request to change user role
             axios
                 .post(this.$store.getters.api + '/admin/users/' + this.$route.params.id + '/role', {
                     attributes: {
@@ -215,3 +159,4 @@ export default {
     },
 }
 </script>
+

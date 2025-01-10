@@ -6,7 +6,7 @@
                 <!--User thumbnail-->
                 <div class="mb-3 flex items-center">
                     <!--Image input for replace avatar-->
-					<MemberAvatar class="shadow-lg rounded-xl" :size="64" :is-border="false" :member="user" />
+                    <MemberAvatar class="shadow-lg rounded-xl" :size="64" :is-border="false" :member="user" />
 
                     <!--User name & email-->
                     <div class="ml-4">
@@ -51,7 +51,7 @@ import MemberAvatar from "../../../components/UI/Others/MemberAvatar";
 export default {
     name: 'Profile',
     components: {
-		MemberAvatar,
+        MemberAvatar,
         CardNavigation,
         CreditCardIcon,
         HardDriveIcon,
@@ -75,27 +75,7 @@ export default {
             return this.$store.getters.user ? this.$store.getters.user : undefined
         },
         pages() {
-            if (this.config.subscriptionType === 'none') {
-                return [
-                    {
-                        title: this.$t('detail'),
-                        route: 'UserDetail',
-                    },
-                    {
-                        title: this.$t('storage'),
-                        route: 'UserStorage',
-                    },
-                    {
-                        title: this.$t('password'),
-                        route: 'UserPassword',
-                    },
-                    {
-                        title: this.$t('delete_account'),
-                        route: 'UserDelete',
-                    },
-                ]
-            }
-
+            // Всегда возвращаем массив страниц без вкладки "Оплата"
             return [
                 {
                     title: this.$t('detail'),
@@ -104,10 +84,6 @@ export default {
                 {
                     title: this.$t('storage'),
                     route: 'UserStorage',
-                },
-                {
-                    title: this.$t('billing'),
-                    route: 'UserSubscription',
                 },
                 {
                     title: this.$t('password'),
