@@ -11,8 +11,6 @@
                 tag="form"
                 class="mb-12 space-y-4 text-left"
             >
-                <!-- Поля формы регистрации -->
-
                 <div class="mx-auto mb-5 md:flex md:max-w-lg md:items-center">
                     <label class="mb-1.5 block font-bold md:mb-0 md:w-72 md:pr-4 md:text-right">
                         {{ $t('email') }}:
@@ -22,7 +20,7 @@
                         mode="passive"
                         class="w-full text-left"
                         name="E-Mail"
-                        rules="required|email"
+                        rules="required"
                         v-slot="{ errors }"
                     >
                         <input
@@ -68,7 +66,7 @@
                         mode="passive"
                         class="w-full text-left"
                         name="Your New Password"
-                        rules="required|min:6"
+                        rules="required"
                         v-slot="{ errors }"
                     >
                         <input
@@ -91,7 +89,7 @@
                         mode="passive"
                         class="w-full text-left"
                         name="Confirm Your Password"
-                        rules="required|confirmed:password"
+                        rules="required"
                         v-slot="{ errors }"
                     >
                         <input
@@ -106,7 +104,30 @@
                 </div>
 
                 <div class="text-center">
-                    <!-- Удалённый блок с соглашением -->
+                    <!--
+                    <i18n path="page_registration.agreement" tag="p" class="mx-auto mt-12 mb-6 w-96 font-bold">
+                        <router-link
+                            :to="{
+                                name: 'DynamicPage',
+                                params: { slug: 'terms-of-service' },
+                            }"
+                            target="_blank"
+                            class="text-theme"
+                        >
+                            {{ termsOfService.title }}
+                        </router-link>
+                        <router-link
+                            :to="{
+                                name: 'DynamicPage',
+                                params: { slug: 'privacy-policy' },
+                            }"
+                            target="_blank"
+                            class="text-theme"
+                        >
+                            {{ privacyPolicy.title }}
+                        </router-link>
+                    </i18n>
+                    -->
                     <AuthButton
                         class="w-full justify-center md:w-min"
                         icon="chevron-right"
@@ -136,8 +157,7 @@ import { ValidationProvider, ValidationObserver } from 'vee-validate/dist/vee-va
 import AuthContent from '../../components/Layout/AuthPages/AuthContent'
 import AuthButton from '../../components/UI/Buttons/AuthButton'
 import SocialLoginButtons from '../../components/UI/Buttons/SocialLoginButtons'
-import { required, email, min, confirmed } from 'vee-validate/dist/rules'
-import { extend } from 'vee-validate'
+import { required } from 'vee-validate/dist/vee-validate.full' // Исправлено на полный импорт правил
 import { mapGetters } from 'vuex'
 import { events } from '../../bus'
 import axios from 'axios'
@@ -188,75 +208,69 @@ export default {
             // Start loading
             this.isLoading = true
 
-            // Get ReCaptcha token
-            if (this.config.allowedRecaptcha) {
-                this.register.reCaptcha = await this.$reCaptchaToken('register')
-                    .then((response) => response)
-            }
+            try {
+                // Get ReCaptcha token if enabled
+                if (this.config.allowedRecaptcha) {
+                    this.register.reCaptcha = await this.$reCaptchaToken('register')
+                }
 
-            // Send request to register user
-            axios
-                .post('/api/register', this.register)
-                .then(() => {
-                    if (!this.config.userVerification) {
-                        // Set login state
-                        this.$store.commit('SET_AUTHORIZED', true)
+                // Send registration request
+                const response = await axios.post('/api/register', this.register)
 
-                        // Navigate to files page
-                        this.$router.push({ name: 'Files' })
-                    } else {
-                        // Navigate to SuccessfullySend page
-                        this.$router.push({ name: 'SuccessfullySend' })
+                if (!this.config.userVerification) {
+                    // Set login state
+                    this.$store.commit('SET_AUTHORIZED', true)
+
+                    // Redirect to files page
+                    this.$router.push({ name: 'Files' })
+                } else {
+                    // Redirect to verification success page
+                    this.$router.push({ name: 'SuccessfullySend' })
+                }
+            } catch (error) {
+                if (error.response) {
+                    const status = error.response.status
+                    const data = error.response.data
+
+                    if (status === 500) {
+                        events.$emit('alert:open', {
+                            title: this.$t('popup_error.title'),
+                            message: this.$t('popup_error.message'),
+                        })
                     }
-                })
-                .catch((error) => {
-                    if (error.response) {
-                        const { status, data } = error.response
 
-                        if (status === 500) {
-                            events.$emit('alert:open', {
-                                title: this.$t('popup_error.title'),
-                                message: this.$t('popup_error.message'),
-                            })
+                    if (status === 409) {
+                        events.$emit('alert:open', {
+                            title: data.message,
+                        })
+                    }
+
+                    if (status === 422) {
+                        const errors = {}
+                        if (data.errors['email']) {
+                            errors['E-Mail'] = data.errors['email']
                         }
-
-                        if (status === 409) {
+                        if (data.errors['password']) {
+                            errors['Your New Password'] = data.errors['password']
+                        }
+                        if (data.errors['reCaptcha']) {
                             events.$emit('alert:open', {
                                 title: data.message,
                             })
                         }
-
-                        if (status === 422) {
-                            const errors = {}
-
-                            if (data.errors['email']) {
-                                errors['E-Mail'] = data.errors['email']
-                            }
-
-                            if (data.errors['password']) {
-                                errors['Your New Password'] = data.errors['password']
-                            }
-
-                            if (data.errors['reCaptcha']) {
-                                events.$emit('alert:open', {
-                                    title: data.message,
-                                })
-                            }
-
-                            this.$refs.sign_up.setErrors(errors)
-                        }
-                    } else {
-                        // Handle network or other errors
-                        events.$emit('alert:open', {
-                            title: this.$t('popup_error.title'),
-                            message: this.$t('popup_error.network_error'),
-                        })
+                        this.$refs.sign_up.setErrors(errors)
                     }
-                })
-                .finally(() => {
-                    // End loading
-                    this.isLoading = false
-                })
+                } else {
+                    // Handle other errors
+                    events.$emit('alert:open', {
+                        title: this.$t('popup_error.title'),
+                        message: this.$t('popup_error.message'),
+                    })
+                }
+            } finally {
+                // End loading
+                this.isLoading = false
+            }
         },
     },
     created() {
@@ -278,27 +292,4 @@ export default {
         }
     },
 }
-
-// Добавляем валидации
-extend('required', {
-    ...required,
-    message: 'Это поле обязательно.',
-})
-
-extend('email', {
-    ...email,
-    message: 'Введите корректный email.',
-})
-
-extend('min', {
-    ...min,
-    message: 'Пароль должен содержать как минимум {length} символов.',
-})
-
-extend('confirmed', {
-    ...confirmed,
-    message: 'Пароли не совпадают.',
-})
 </script>
-
-

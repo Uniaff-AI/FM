@@ -35,45 +35,7 @@
             </ValidationObserver>
         </div>
 
-        <!-- Раздел "Персональная информация" -->
-        <div class="card shadow-card">
-            <FormLabel>
-                {{ $t('admin_page_user.label_person_info') }}
-            </FormLabel>
-
-            <!-- Имя и Фамилия -->
-            <div class="justify-items md:flex md:space-x-4">
-                <AppInputText :title="$t('first_name')" class="w-full">
-                    <input
-                        disabled
-                        :value="user.data.relationships.settings.data.attributes.first_name"
-                        :placeholder="$t('page_registration.placeholder_name')"
-                        type="text"
-                        class="focus-border-theme input-dark disabled:text-gray-900 disabled:opacity-100"
-                    />
-                </AppInputText>
-                <AppInputText :title="$t('last_name')" class="w-full">
-                    <input
-                        disabled
-                        :value="user.data.relationships.settings.data.attributes.last_name"
-                        :placeholder="$t('page_registration.placeholder_name')"
-                        type="text"
-                        class="focus-border-theme input-dark disabled:text-gray-900 disabled:opacity-100"
-                    />
-                </AppInputText>
-            </div>
-
-            <!-- Полное Имя -->
-            <AppInputText :title="$t('full_name')" :is-last="true">
-                <input
-                    :value="user.data.relationships.settings.data.attributes.name"
-                    :placeholder="$t('page_registration.placeholder_name')"
-                    type="text"
-                    class="focus-border-theme input-dark disabled:text-gray-900 disabled:opacity-100"
-                    disabled
-                />
-            </AppInputText>
-        </div>
+        <!-- Раздел "Персональная информация" удален -->
 
         <!-- Раздел "Информация для выставления счета" Удален -->
     </PageTab>
@@ -159,4 +121,3 @@ export default {
     },
 }
 </script>
-
