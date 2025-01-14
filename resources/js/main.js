@@ -1,3 +1,4 @@
+// main.js
 require('./bootstrap')
 import Vue from 'vue'
 import i18n from './i18n'
@@ -8,6 +9,10 @@ import App from './App.vue'
 import store from './store'
 import { events } from './bus'
 
+// Импортируйте компонент SocialChat
+import { SocialChat } from 'vue-social-chat'
+
+// Импортируйте дополнительные хелперы и плагины
 import SubscriptionHelpers from './helpers/SubscriptionHelpers'
 import ValidatorHelpers from './helpers/ValidatorHelpers'
 import functionHelpers from './helpers/functionHelpers'
@@ -21,6 +26,9 @@ Vue.use(ValidatorHelpers)
 Vue.use(functionHelpers)
 Vue.use(AlertHelpers)
 Vue.use(itemHelpers)
+
+// Глобальная регистрация компонента SocialChat
+Vue.component('SocialChat', SocialChat)
 
 // Google Analytics implementation
 if (config.googleAnalytics) {
@@ -48,8 +56,10 @@ document.addEventListener(
     (event) => {
         let multiSelect = document.getElementById('drag-ui')
 
-        multiSelect.style.top = event.clientY + 20 + 'px'
-        multiSelect.style.left = event.clientX + 'px'
+        if (multiSelect) { // Добавьте проверку на существование элемента
+            multiSelect.style.top = event.clientY + 20 + 'px'
+            multiSelect.style.left = event.clientX + 'px'
+        }
     },
     false
 )

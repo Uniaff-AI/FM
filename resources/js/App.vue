@@ -1,24 +1,43 @@
 <template>
     <div @keydown.esc="closeOverlays" tabindex="-1" class="min-w-[320px]">
-        <!--UI components-->
+        <!-- Существующие UI-компоненты -->
         <Alert />
         <ToasterWrapper />
         <CookieDisclaimer />
-		<RemoteUploadProgress />
+        <RemoteUploadProgress />
 
-        <!--Show spinner before translations is loaded-->
+        <!-- Показать спиннер до загрузки переводов -->
         <Spinner v-if="!isLoaded" />
 
-        <!--Show warning bar when user functionality is restricted-->
+        <!-- Показать предупреждающую панель при ограничении функциональности пользователя -->
         <RestrictionWarningBar />
 
-		<div :class="{'lg:flex': isSidebarNavigation}">
-			<SidebarNavigation v-if="isSidebarNavigation" />
-			<router-view v-if="isLoaded" />
-		</div>
+        <div :class="{'lg:flex': isSidebarNavigation}">
+            <SidebarNavigation v-if="isSidebarNavigation" />
+            <router-view v-if="isLoaded" />
+        </div>
 
-        <!--Background under popups-->
+        <!-- Фон под всплывающими окнами -->
         <Vignette />
+
+        <!-- Компонент Social Chat -->
+        <SocialChat
+            icon
+            :attendants="attendants"
+        >
+            <template v-slot:header>
+                Нажмите на одного из наших сотрудников ниже, чтобы начать чат в Telegram.
+            </template>
+            <template v-slot:button>
+                <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg"
+                    alt="Telegram Logo"
+                    aria-hidden="true"
+                />
+            </template>
+            <template v-slot:footer>
+            </template>
+        </SocialChat>
     </div>
 </template>
 
@@ -34,58 +53,85 @@ import Alert from './components/Popups/Alert'
 import { mapGetters } from 'vuex'
 import { events } from './bus'
 
+// Импортируем компонент SocialChat
+import { SocialChat } from 'vue-social-chat'
+
 export default {
     name: 'App',
     components: {
         RestrictionWarningBar,
-		RemoteUploadProgress,
-		SidebarNavigation,
+        RemoteUploadProgress,
+        SidebarNavigation,
         CookieDisclaimer,
         ToasterWrapper,
         Vignette,
         Spinner,
         Alert,
+        SocialChat, // Регистрация компонента SocialChat локально
     },
     data() {
         return {
             isLoaded: false,
-			isSidebarNavigation: undefined,
+            isSidebarNavigation: undefined,
+            attendants: [ // Обновленные данные для attendants с Telegram
+                {
+                    app: 'telegram',
+                    label: 'Саппорт',
+                    name: 'Расул Хайруллин',
+                    username: 'SadisticGG', // Telegram-юзернейм без @
+                    avatar: {
+                        src: 'https://avatars.githubusercontent.com/u/188985121?s=400&u=d01ff4c95a8ea86f2c31406fed61c8cfd19a02d7&v=4',
+                        alt: 'Аватар Расул Хайруллина'
+                    }
+                },
+                // Добавьте больше attendants по необходимости
+                {
+                    app: 'telegram',
+                    label: 'Саппорт',
+                    name: 'Максим Одинцов',
+                    username: 'yanderoshi',
+                    avatar: {
+                        src: 'https://avatars.githubusercontent.com/u/59776723?v=4',
+                        alt: 'Аватар Максима Одинцова'
+                    }
+                },
+            ],
         }
     },
     computed: {
         ...mapGetters(['config', 'user']),
     },
     watch: {
-        'config.defaultThemeMode': function () {
+        'config.defaultThemeMode': function() {
             this.handleDarkMode()
         },
-		'$route' () {
-			let section = this.$router.currentRoute.fullPath.split('/')[1]
-			const app = document.getElementsByTagName('body')[0]
+        '$route'() {
+            let section = this.$router.currentRoute.fullPath.split('/')[1]
+            const app = document.getElementsByTagName('body')[0]
 
-			// Set background color via theme setup
-			if (['admin', 'user'].includes(section)) {
-				app.classList.add('dark:bg-dark-background', 'bg-light-background')
-			} else {
-				app.classList.remove('dark:bg-dark-background', 'bg-light-background')
-			}
+            // Установка фона через тему
+            if (['admin', 'user'].includes(section)) {
+                app.classList.add('dark:bg-dark-background', 'bg-light-background')
+            } else {
+                app.classList.remove('dark:bg-dark-background', 'bg-light-background')
+            }
 
-			// Set sidebar navigation visibility
-			this.isSidebarNavigation = ['admin', 'user', 'platform'].includes(section)
-		}
+            // Установка видимости боковой навигации
+            this.isSidebarNavigation = ['admin', 'user', 'platform'].includes(section)
+        }
     },
     methods: {
-		closeOverlays() {
-			events.$emit('popup:close')
-			events.$emit('popover:close')
+        closeOverlays() {
+            events.$emit('popup:close')
+            events.$emit('popover:close')
 
-			this.$store.commit('CLOSE_NOTIFICATION_CENTER')
-		},
+            this.$store.commit('CLOSE_NOTIFICATION_CENTER')
+        },
         spotlightListener(e) {
-			if (e.key === 'k' && e.metaKey || e.key === 'k' && e.ctrlKey) {
-				e.preventDefault()
-				events.$emit('spotlight:show');
-			}
+            if ((e.key === 'k' && e.metaKey) || (e.key === 'k' && e.ctrlKey)) {
+                e.preventDefault()
+                events.$emit('spotlight:show');
+            }
         },
         handleDarkMode() {
             const app = document.getElementsByTagName('html')[0]
@@ -111,12 +157,12 @@ export default {
             this.handleDarkMode()
         })
 
-        // Commit config
+        // Коммит конфигурации
         this.$store.commit('INIT', {
             config: this.$root.$data.config,
         })
 
-        // Redirect to setup wizard
+        // Редирект на мастер настройки
         if (this.$root.$data.config.installation === 'installation-needed') {
             this.isLoaded = true
 
@@ -129,10 +175,10 @@ export default {
             })
         }
 
-		// Go to sign in page if homepage is disabled
-		if (!this.$root.$data.config.allowHomepage && window.location.pathname === '/') {
-			this.$router.push({ name: 'SignIn' })
-		}
+        // Перейти на страницу входа, если домашняя страница отключена
+        if (!this.$root.$data.config.allowHomepage && window.location.pathname === '/') {
+            this.$router.push({ name: 'SignIn' })
+        }
     },
     created() {
         if (this.$isWindows()) {
@@ -187,7 +233,7 @@ input:-webkit-autofill {
     }
 }
 
-// Dark mode
+/* Dark mode */
 .dark {
     * {
         color: $dark_mode_text_primary;
@@ -202,5 +248,57 @@ input:-webkit-autofill {
             opacity: 0.95;
         }
     }
+}
+
+/* Кастомизация стилей для vue-social-chat */
+:root {
+    --vsc-bg-header: #ffffff; /* Фон заголовка */
+    --vsc-bg-footer: #f0f0f0; /* Фон нижней части */
+    --vsc-text-color-header: #000000; /* Цвет текста заголовка */
+    --vsc-text-color-footer: #000000; /* Цвет текста нижней части */
+    --vsc-bg-button: #0088cc; /* Фон кнопки (синий для Telegram) */
+    --vsc-text-color-button: #ffffff; /* Цвет текста кнопки */
+    --vsc-outline-color: #000000; /* Цвет обводки */
+    --vsc-border-color-bottom-header: transparent; /* Цвет нижней границы заголовка */
+    --vsc-border-color-top-footer: #f3f3f3; /* Цвет верхней границы нижней части */
+
+    /* Дополнительные переменные для текста */
+    --vsc-text-color: #000000; /* Общий цвет текста */
+    --vsc-message-text-color: #000000; /* Цвет текста сообщений */
+    --vsc-input-text-color: #000000; /* Цвет текста в поле ввода */
+}
+
+/* Гарантируем, что все тексты внутри vue-social-chat черные */
+.vue-social-chat * {
+    color: #000000 !important;
+}
+
+/* Центрирование кнопки закрытия в vue-social-chat */
+.vue-social-chat .vsc-close-button {
+    position: absolute;
+    top: 50%;
+    right: 16px; /* Отступ справа */
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px; /* Настройте размер по необходимости */
+    height: 24px;
+    cursor: pointer;
+}
+
+/* Дополнительные стили для заголовка, если необходимо */
+.vue-social-chat .vsc-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+/* Если крестик всё ещё смещен, попробуйте добавить следующие стили */
+.vue-social-chat .vsc-close-button svg {
+    width: 100%;
+    height: 100%;
 }
 </style>
