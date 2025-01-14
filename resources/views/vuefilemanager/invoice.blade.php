@@ -51,10 +51,10 @@
         <header class="print:flex lg:flex justify-between items-start pb-4 mb-4 border-b dark:border-opacity-5 border-light border-dashed">
             <div>
                 @if(isset($settings->app_logo_horizontal))
-                    <img src="{{ url($settings->app_logo_horizontal) }}" alt="{{ $settings->app_title ?? 'VueFileManager' }}" class="h-8">
+                    <img src="{{ url($settings->app_logo_horizontal) }}" alt="{{ $settings->app_title ?? 'FileManager' }}" class="h-8">
                 @else
                     <h1 class="text-2xl font-bold">
-                        {{ $settings->app_title ?? 'VueFileManager' }}
+                        {{ $settings->app_title ?? 'FileManager' }}
                     </h1>
                 @endif
 

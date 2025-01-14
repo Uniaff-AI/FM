@@ -87,7 +87,7 @@ class SetupProdEnvironment extends Command
             ],
             [
                 'name'  => 'app_title',
-                'value' => 'VueFileManager',
+                'value' => 'FileManager',
             ],
             [
                 'name'  => 'app_description',

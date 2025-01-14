@@ -30,7 +30,7 @@ class ResetPassword extends Notification
     public function toMail(mixed $notifiable): MailMessage
     {
         $reset_url = url('/create-new-password?token=' . $this->token);
-        $app_name = get_settings('app_title') ?? 'VueFileManager';
+        $app_name = 'FileManager';
 
         return (new MailMessage)
             ->subject(__t('reset_password_subject') .  $app_name)
