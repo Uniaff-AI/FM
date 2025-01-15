@@ -140,6 +140,10 @@ const defaultState = {
             label: 'roles.user',
             value: 'user',
         },
+        {
+            label: 'roles.helper',
+            value: 'helper',
+        }
     ],
     subscriptionTypes: [
         {

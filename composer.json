@@ -17,7 +17,7 @@
         "doctrine/dbal": "^2.13.7",
         "fruitcake/laravel-cors": "^2.0.5",
         "gabrielelana/byte-units": "^0.5.0",
-        "guzzlehttp/guzzle": "^7.4.1",
+        "guzzlehttp/guzzle": "^7.5",
         "intervention/image": "^2.7.1",
         "jaybizzle/laravel-crawler-detect": "^1.2",
         "kyslik/column-sortable": "^6.4.1",

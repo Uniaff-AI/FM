@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Users\Models;
 
 use ByteUnits\Metric;
@@ -30,16 +31,8 @@ use VueFileManager\Subscription\App\User\Traits\Billable;
  * @property string id
  * @property Setting settings
  * @property string email
- * @property mixed favouriteFolders
  * @property string role
  * @property string email_verified_at
- * @method static count()
- * @method static sortable(string[] $array)
- * @method static forceCreate(array $array)
- * @method static where(string $string, string $string1)
- * @method static create(array $array)
- * @method static find(mixed $email)
- * @method canUpload(int $size)
  */
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -87,6 +80,22 @@ class User extends Authenticatable implements MustVerifyEmail
 
     protected $keyType = 'string';
 
+    /**
+     * Вернуть список всех допустимых ролей
+     */
+    public static function roles(): array
+    {
+        return ['admin', 'user', 'helper'];
+    }
+
+    /**
+     * Проверить, обладает ли пользователь указанной ролью
+     */
+    public function hasRole(string $role): bool
+    {
+        return $this->role === $role;
+    }
+
     protected static function newFactory(): UserFactory
     {
         return UserFactory::new();
@@ -97,14 +106,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return get_settings('language') ?? 'en';
     }
 
-    /**
-     * Get user used storage details
-     */
     public function getStorageAttribute(): array
     {
         $is_storage_limit = get_settings('storage_limitation') ?? 1;
 
-        if (! $is_storage_limit) {
+        if (!$is_storage_limit) {
             return [
                 'used'           => $this->usedCapacity,
                 'used_formatted' => Metric::bytes($this->usedCapacity)->format(),
@@ -112,16 +118,13 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         return [
-            'used'               => (float) get_storage_percentage($this->usedCapacity, $this->limitations->max_storage_amount),
+            'used'               => (float)get_storage_percentage($this->usedCapacity, $this->limitations->max_storage_amount),
             'used_formatted'     => get_storage_percentage($this->usedCapacity, $this->limitations->max_storage_amount) . '%',
             'capacity'           => $this->limitations->max_storage_amount,
             'capacity_formatted' => toGigabytes($this->limitations->max_storage_amount),
         ];
     }
 
-    /**
-     * Get user used storage capacity in bytes
-     */
     public function getUsedCapacityAttribute(): int
     {
         return DB::table('files')
@@ -139,27 +142,18 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(UserLimitation::class);
     }
 
-    /**
-     * Get user favourites folder
-     */
     public function favouriteFolders(): BelongsToMany
     {
         return $this->belongsToMany(Folder::class, 'favourite_folder', 'user_id', 'parent_id', 'id', 'id')
             ->where('team_folder', false);
     }
 
-    /**
-     * Get all user files
-     */
     public function filesWithTrashed(): HasMany
     {
         return $this->hasMany(File::class)
             ->withTrashed();
     }
 
-    /**
-     * Get 5 latest uploads
-     */
     public function latestUploads(): HasMany
     {
         return $this->hasMany(File::class)
@@ -169,9 +163,6 @@ class User extends Authenticatable implements MustVerifyEmail
             ]);
     }
 
-    /**
-     * Get all user files
-     */
     public function files(): HasMany
     {
         return $this->hasMany(File::class);
@@ -192,9 +183,6 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(UploadRequest::class);
     }
 
-    /**
-     * Send the password reset notification.
-     */
     public function sendPasswordResetNotification($token): void
     {
         $this->notify(new ResetPassword($token));
@@ -222,18 +210,15 @@ class User extends Authenticatable implements MustVerifyEmail
         static::creating(function ($user) {
             $user->id = Str::uuid();
 
-            // Create default limitations
             $user->limitations()->create([
                 'max_storage_amount' => get_settings('default_max_storage_amount') ?? 1,
                 'max_team_members'   => get_settings('default_max_team_member') ?? 10,
             ]);
 
-            // Create user directory for his files
             Storage::makeDirectory("files/$user->id");
         });
 
         static::updating(function ($user) {
-            // Prevent to set 2fa in demo mode
             if (config('vuefilemanager.is_demo') && $user->email === 'howdy@hi5ve.digital') {
                 $user->two_factor_secret = null;
                 $user->two_factor_recovery_codes = null;
