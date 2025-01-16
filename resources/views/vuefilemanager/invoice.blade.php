@@ -281,7 +281,7 @@
                         </td>
                         <td class="py-1.5 pl-3 text-right">
                             <span class="text-sm font-bold">
-                                {{ format_currency($invoice->amount, $invoice->currency) }}
+//                                 {{ format_currency($invoice->amount, $invoice->currency) }}
                             </span>
                         </td>
                     </tr>

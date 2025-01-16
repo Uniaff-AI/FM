@@ -39,7 +39,7 @@ class AutoSubscribeForMeteredBillingAction
             ]);
 
             // Send user bonus notification
-            $bonus = format_currency($settings['registration_bonus_amount'], $plan->currency);
+//             $bonus = format_currency($settings['registration_bonus_amount'], $plan->currency);
 
             $user->notify(new RegistrationBonusAddedNotification($bonus));
         } else {

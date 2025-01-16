@@ -153,7 +153,6 @@ import FormLabel from '../../components/UI/Labels/FormLabel'
 import BarChart from '../../components/UI/BarChart/BarChart'
 import { mapGetters } from 'vuex'
 import axios from 'axios'
-import WidgetLatestTransactions from '../../components/Dashboard/Widgets/WidgetLatestTransactions'
 import AlertBox from "../../components/UI/Others/AlertBox";
 import AppSpecification from "../../components/Dashboard/AppSpecification";
 
@@ -162,7 +161,6 @@ export default {
     components: {
         AppSpecification,
         AlertBox,
-        WidgetLatestTransactions,
         WidgetLatestRegistrations,
         ChevronRightIcon,
         FormLabel,
