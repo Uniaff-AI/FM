@@ -14,9 +14,12 @@ class AdminCheck
      */
     public function handle($request, Closure $next)
     {
-        // Check if user have access to administration settings
-        if ($request->user()->role !== 'admin') {
-            return response("You don't have access for this operation!", 403);
+        // Разрешенные роли
+        $allowedRoles = ['admin', 'helper'];
+
+        // Проверяем, есть ли у пользователя одна из разрешенных ролей
+        if (!in_array($request->user()->role, $allowedRoles)) {
+            return response("У вас нет доступа к этой операции!", 403);
         }
 
         return $next($request);

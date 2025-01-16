@@ -427,6 +427,7 @@ const FunctionHelpers = {
             return {
                 admin: 'purple',
                 user: 'green',
+                helper: 'red',
             }[role]
         }
 

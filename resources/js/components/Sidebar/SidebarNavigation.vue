@@ -1,13 +1,14 @@
+<!-- SidebarNavigation.vue -->
 <template>
     <nav
         v-if="isVisibleNavigationBars"
         class="menu-bar z-10 hidden w-16 flex-none select-none bg-light-background pt-7 dark:bg-dark-foreground lg:grid xl:w-20"
     >
-        <!--Navigation-->
+        <!-- Navigation -->
         <div v-if="user" class="mb-auto text-center">
             <MemberAvatar class="mx-auto" :size="44" :is-border="false" :member="user" />
 
-            <!--Usage-->
+            <!-- Usage -->
             <div
                 v-if="config.subscriptionType === 'metered' && user.data.meta.usages"
                 class="mt-2.5 text-center leading-3"
@@ -20,14 +21,14 @@
                 </span>
             </div>
 
-            <!--Navigation-->
+            <!-- Notification Bell -->
             <div class="mt-2 relative">
                 <NotificationBell @click.native="$store.commit('TOGGLE_NOTIFICATION_CENTER')" class="hover:bg-light-300 dark:hover:bg-4x-dark-foreground" />
             </div>
 
-			<NotificationCenter v-if="isVisibleNotificationCenter" />
+            <NotificationCenter v-if="isVisibleNotificationCenter" />
 
-            <!--Navigation-->
+            <!-- Navigation Links -->
             <div class="mt-6">
                 <router-link
                     v-for="(item, i) in navigation"
@@ -40,113 +41,166 @@
                     <div
                         class="button-icon text-theme inline-block cursor-pointer rounded-xl p-3 hover:bg-light-300 dark:hover:bg-4x-dark-foreground"
                     >
-                        <hard-drive-icon v-if="item.icon === 'home'" size="20" />
-                        <settings-icon v-if="item.icon === 'settings'" size="20" />
-                        <user-icon v-if="item.icon === 'user'" size="20" />
+                        <!-- Dynamic Icon Rendering -->
+                        <component
+                            :is="getIconComponent(item.icon)"
+                            size="20"
+                            class="vue-feather"
+                        />
                     </div>
                 </router-link>
             </div>
 
-            <!--Toggle Dark/Light mode-->
+            <!-- Toggle Dark/Light mode -->
             <div @click="$store.dispatch('toggleThemeMode')" :title="$t('dark_mode_toggle')" class="mt-6 block">
                 <div
                     class="button-icon inline-block cursor-pointer rounded-xl p-3 hover:bg-light-300 dark:hover:bg-4x-dark-foreground"
                 >
-                    <sun-icon v-if="isDarkMode" size="20" />
-                    <moon-icon v-if="!isDarkMode" size="20" />
+                    <component
+                        :is="isDarkMode ? 'SunIcon' : 'MoonIcon'"
+                        size="20"
+                        class="vue-feather"
+                    />
                 </div>
             </div>
         </div>
 
-        <!--Logout-->
+        <!-- Logout -->
         <div class="mt-auto text-center">
             <div
                 @click="$store.dispatch('logOut')"
                 :title="$t('logout')"
                 class="button-icon inline-block cursor-pointer rounded-xl p-3 hover:bg-light-300 dark:hover:bg-4x-dark-foreground"
             >
-                <power-icon size="20" />
+                <PowerIcon size="20" />
             </div>
         </div>
     </nav>
 </template>
 
 <script>
-import MemberAvatar from '../UI/Others/MemberAvatar'
-import {mapGetters} from 'vuex'
-import {HardDriveIcon, MoonIcon, PowerIcon, SettingsIcon, SunIcon, UserIcon,} from 'vue-feather-icons'
-import NotificationCenter from "../Notifications/NotificationCenter"
+import MemberAvatar from '../UI/Others/MemberAvatar';
+import { mapGetters } from 'vuex';
+import {
+    HardDriveIcon,
+    MoonIcon,
+    PowerIcon,
+    SettingsIcon,
+    SunIcon,
+    UserIcon,
+} from 'vue-feather-icons';
+import NotificationCenter from "../Notifications/NotificationCenter";
 import NotificationBell from "../Notifications/Components/NotificationBell";
 
 export default {
     name: 'SidebarNavigation',
     components: {
-		NotificationBell,
-		NotificationCenter,
-		HardDriveIcon,
+        NotificationBell,
+        NotificationCenter,
+        HardDriveIcon,
         SettingsIcon,
+        UserIcon,
         MemberAvatar,
         PowerIcon,
-        UserIcon,
         MoonIcon,
         SunIcon,
     },
     computed: {
         ...mapGetters(['isVisibleNavigationBars', 'isDarkMode', 'config', 'user', 'isVisibleNotificationCenter']),
-        navigation() {
-            if (this.user.data.attributes.role === 'admin') {
-                return [
-                    {
-                        route: 'Files',
-                        section: 'Platform',
-                        title: this.$t('locations.home'),
-                        icon: 'home',
-                    },
-                    {
-                        route: 'Profile',
-                        section: 'User',
-                        title: this.$t('locations.profile'),
-                        icon: 'user',
-                    },
-                    {
-                        route: 'Dashboard',
-                        section: 'Admin',
-                        title: this.$t('locations.settings'),
-                        icon: 'settings',
-                    },
-                ]
-            }
 
-            return [
-                {
-                    route: 'Files',
-                    section: 'Platform',
-                    title: this.$t('locations.home'),
-                    icon: 'home',
-                },
+        /**
+         * Проверка, является ли пользователь администратором
+         */
+        isAdmin() {
+            return this.user && this.user.data.attributes.role === 'admin';
+        },
+
+        /**
+         * Проверка, является ли пользователь помощником
+         */
+        isHelper() {
+            return this.user && this.user.data.attributes.role === 'helper';
+        },
+
+        /**
+         * Проверка, имеет ли пользователь административные права (admin или helper)
+         */
+        hasAdminPrivileges() {
+            return this.isAdmin || this.isHelper;
+        },
+
+        /**
+         * Определение навигационных пунктов на основе роли пользователя
+         */
+        navigation() {
+            // Base navigation for all users
+            const baseNavigation = [
                 {
                     route: 'Profile',
                     section: 'User',
                     title: this.$t('locations.profile'),
+                    icon: 'user',
+                },
+            ];
+
+            // Conditionally include 'Files' only for admins
+            if (this.isAdmin) {
+                baseNavigation.unshift({
+                    route: 'Files',
+                    section: 'Platform',
+                    title: this.$t('locations.home'),
+                    icon: 'home',
+                });
+            }
+
+            // Admin-specific navigation items
+            const adminNavigation = [
+                {
+                    route: 'Dashboard',
+                    section: 'Admin',
+                    title: this.$t('locations.settings'),
                     icon: 'settings',
                 },
-            ]
+                // Добавьте другие админские маршруты по мере необходимости
+            ];
+
+            // Include admin navigation items if the user has admin privileges
+            if (this.hasAdminPrivileges) {
+                return [...baseNavigation, ...adminNavigation];
+            }
+
+            return baseNavigation;
         },
     },
-	data() {
-		return {
-			isNotificationCenter: false,
-		}
-	},
+    data() {
+        return {
+            isNotificationCenter: false,
+        };
+    },
     methods: {
         isSection(section) {
-            return this.$route.matched[0].name === section
+            return this.$route.matched[0].name === section;
+        },
+
+        /**
+         * Возвращает соответствующий компонент иконки на основе имени иконки
+         * @param {String} iconName - Имя иконки
+         * @returns {Component} - Компонент иконки
+         */
+        getIconComponent(iconName) {
+            const iconsMap = {
+                'home': 'HardDriveIcon',
+                'settings': 'SettingsIcon',
+                'user': 'UserIcon',
+                // Добавьте другие иконки по мере необходимости
+            };
+            return iconsMap[iconName] || 'HardDriveIcon'; // Default icon
         },
     },
     mounted() {
-        this.$store.dispatch('getAppData')
+        this.$store.dispatch('getAppData');
     },
-}
+};
 </script>
 
 <style scoped lang="scss">

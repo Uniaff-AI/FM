@@ -1,6 +1,8 @@
+<!-- PanelNavigationFiles.vue -->
 <template>
-    <ContentSidebar v-if="isVisibleNavigationBars" class="relative">
-        <!--Full screen button-->
+    <!-- Only show ContentSidebar if navigation bars are visible and user is not a helper -->
+    <ContentSidebar v-if="isVisibleNavigationBars && !isHelper" class="relative">
+        <!-- Full screen button -->
         <div
             @click="$store.dispatch('toggleNavigationBars')"
             class="absolute top-[11px] right-1 inline-block cursor-pointer p-3 opacity-20 transition-all duration-200 hover:opacity-70"
@@ -8,7 +10,7 @@
             <chevrons-left-icon size="18" />
         </div>
 
-        <!--Locations-->
+        <!-- Locations -->
         <ContentGroup
             v-for="(menu, i) in nav"
             :key="i"
@@ -23,24 +25,19 @@
                 :to="{ name: item.route }"
                 class="flex items-center py-2.5"
             >
-                <home-icon v-if="item.icon === 'home'" size="17" class="vue-feather icon-active mr-2.5" />
-                <upload-cloud-icon
-                    v-if="item.icon === 'upload-cloud'"
+                <!-- Icon rendering based on item.icon -->
+                <component
+                    :is="getIconComponent(item.icon)"
                     size="17"
                     class="vue-feather icon-active mr-2.5"
                 />
-                <link-icon v-if="item.icon === 'link'" size="17" class="vue-feather icon-active mr-2.5" />
-                <trash2-icon v-if="item.icon === 'trash'" size="17" class="vue-feather icon-active mr-2.5" />
-                <users-icon size="17" v-if="item.icon === 'users'" class="vue-feather icon-active mr-2.5" />
-                <user-check-icon size="17" v-if="item.icon === 'user-check'" class="vue-feather icon-active mr-2.5" />
-
                 <b class="text-active text-xs font-bold">
                     {{ item.title }}
                 </b>
             </router-link>
         </ContentGroup>
 
-        <!--Navigator-->
+        <!-- Navigator -->
         <ContentGroup v-if="navigation" :title="$t('navigator')" slug="navigator" :can-collapse="true">
             <small v-if="tree.length === 0" class="text-xs text-gray-500 dark:text-gray-500">
                 {{ $t("not_any_folder") }}
@@ -48,7 +45,7 @@
             <TreeMenuNavigator :depth="0" :nodes="folder" v-for="folder in tree" :key="folder.id" />
         </ContentGroup>
 
-        <!--Favourites-->
+        <!-- Favourites -->
         <ContentGroup v-if="user" :title="$t('favourites')" slug="favourites" :can-collapse="true">
             <div
                 @dragover.prevent="dragEnter"
@@ -57,12 +54,12 @@
                 :class="{ 'border-theme': area }"
                 class="-ml-5 rounded-lg border-2 border-dashed border-transparent pl-5"
             >
-                <!--Empty message-->
+                <!-- Empty message -->
                 <small v-if="favourites.length === 0" class="text-xs text-gray-500 dark:text-gray-500" :key="0">
                     {{ $t('sidebar.favourites_empty') }}
                 </small>
 
-                <!--Folder item-->
+                <!-- Folder item -->
                 <div
                     @click="goToFolder(folder)"
                     v-for="folder in favourites"
@@ -106,12 +103,12 @@ import {
     UserCheckIcon,
     UsersIcon,
     XIcon,
-} from 'vue-feather-icons'
-import TreeMenuNavigator from '../UI/Trees/TreeMenuNavigator'
-import ContentSidebar from '../Sidebar/ContentSidebar'
-import ContentGroup from '../Sidebar/ContentGroup'
-import { events } from '../../bus'
-import { mapGetters } from 'vuex'
+} from 'vue-feather-icons';
+import TreeMenuNavigator from '../UI/Trees/TreeMenuNavigator';
+import ContentSidebar from '../Sidebar/ContentSidebar';
+import ContentGroup from '../Sidebar/ContentGroup';
+import { events } from '../../bus';
+import { mapGetters } from 'vuex';
 
 export default {
     name: 'PanelNavigationFiles',
@@ -131,11 +128,19 @@ export default {
     },
     computed: {
         ...mapGetters(['isVisibleNavigationBars', 'navigation', 'clipboard', 'config', 'user']),
+
+        /**
+         * Проверка, является ли пользователь помощником (helper)
+         */
+        isHelper() {
+            return this.user && this.user.data.attributes.role === 'helper';
+        },
+
         favourites() {
-            return this.user.data.relationships.favourites
+            return this.user.data.relationships.favourites;
         },
         storage() {
-            return this.$store.getters.user.data.attributes.storage
+            return this.$store.getters.user.data.attributes.storage;
         },
         tree() {
             return {
@@ -146,7 +151,7 @@ export default {
                 Files: this.navigation[0].folders,
                 TeamFolders: this.navigation[1].folders,
                 SharedWithMe: this.navigation[2].folders,
-            }[this.$route.name]
+            }[this.$route.name];
         },
     },
     data() {
@@ -197,56 +202,78 @@ export default {
                     ],
                 },
             ],
-        }
+        };
     },
     methods: {
         resetData() {
-            this.$store.commit('SET_CURRENT_TEAM_FOLDER', null)
-            this.$store.commit('CLIPBOARD_CLEAR')
+            this.$store.commit('SET_CURRENT_TEAM_FOLDER', null);
+            this.$store.commit('CLIPBOARD_CLEAR');
         },
         goToFolder(folder) {
-            this.$router.push({ name: 'Files', params: { id: folder.data.id } })
+            this.$router.push({ name: 'Files', params: { id: folder.data.id } });
         },
         dragLeave() {
-            this.area = false
+            this.area = false;
         },
         dragEnter() {
-            if (this.draggedItem && this.draggedItem.data.type !== 'folder') return
+            if (this.draggedItem && this.draggedItem.data.type !== 'folder') return;
 
-            if (this.clipboard.length > 0 && this.clipboard.find((item) => item.data.type !== 'folder')) return
+            if (this.clipboard.length > 0 && this.clipboard.find((item) => item.data.type !== 'folder')) return;
 
-            this.area = true
+            this.area = true;
         },
         dragFinish() {
-            this.area = false
+            this.area = false;
 
-            events.$emit('drop')
+            events.$emit('drop');
 
             // Check if dragged item is folder
-            if (this.draggedItem && this.draggedItem.data.type !== 'folder') return
+            if (this.draggedItem && this.draggedItem.data.type !== 'folder') return;
 
-            // Check if folder exist in favourites
-            if (this.favourites.find((folder) => folder.data.id === this.draggedItem.data.id)) return
+            // Check if folder exists in favourites
+            if (this.favourites.find((folder) => folder.data.id === this.draggedItem.data.id)) return;
 
-            // Prevent to move folders to self
-            if (this.clipboard.length > 0 && this.clipboard.find((item) => item.data.type !== 'folder')) return
+            // Prevent moving folders to self
+            if (this.clipboard.length > 0 && this.clipboard.find((item) => item.data.type !== 'folder')) return;
 
-            // Add to favourites non selected folder
+            // Add to favourites non-selected folder
             if (!this.clipboard.includes(this.draggedItem)) {
-                this.$store.dispatch('addToFavourites', this.draggedItem)
+                this.$store.dispatch('addToFavourites', this.draggedItem);
             }
 
             // Add to favourites selected folders
             if (this.clipboard.includes(this.draggedItem)) {
-                this.$store.dispatch('addToFavourites', null)
+                this.$store.dispatch('addToFavourites', null);
             }
+        },
+
+        /**
+         * Возвращает соответствующий компонент иконки на основе имени иконки
+         * @param {String} iconName - Имя иконки
+         * @returns {Component} - Компонент иконки
+         */
+        getIconComponent(iconName) {
+            const iconsMap = {
+                'home': 'HomeIcon',
+                'upload-cloud': 'UploadCloudIcon',
+                'link': 'LinkIcon',
+                'trash': 'Trash2Icon',
+                'users': 'UsersIcon',
+                'user-check': 'UserCheckIcon',
+                // Добавьте другие иконки по мере необходимости
+            };
+            return iconsMap[iconName] || 'XIcon'; // Default icon
         },
     },
     created() {
         // Listen for dragstart folder items
-        events.$on('dragstart', (item) => (this.draggedItem = item))
+        events.$on('dragstart', (item) => (this.draggedItem = item));
 
-        this.$store.dispatch('getFolderTree')
+        this.$store.dispatch('getFolderTree');
     },
-}
+};
 </script>
+
+<style scoped>
+/* Ваши стили */
+</style>

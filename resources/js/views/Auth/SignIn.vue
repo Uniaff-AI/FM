@@ -440,14 +440,14 @@ export default {
             if (this.$route.query.redirect) {
                 this.$router.push(this.$route.query.redirect)
             } else {
-                this.$router.push({ name: 'Files' })
+                this.$router.push({ name: 'Profile' })
             }
         },
     },
 	mounted() {
 		// Redirect if user is authenticated
 		if (this.$root.$data.config.isAuthenticated) {
-			this.$router.push({name: 'Files'})
+			this.$router.push({name: 'Profile'})
 		}
 	},
 	created() {
