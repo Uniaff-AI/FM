@@ -1,4 +1,3 @@
-<!-- SidebarNavigation.vue -->
 <template>
     <nav
         v-if="isVisibleNavigationBars"
@@ -123,10 +122,17 @@ export default {
         },
 
         /**
-         * Проверка, имеет ли пользователь административные права (admin или helper)
+         * Проверка, является ли пользователь обычным пользователем (user)
          */
-        hasAdminPrivileges() {
-            return this.isAdmin || this.isHelper;
+        isUser() {
+            return this.user && this.user.data.attributes.role === 'user';
+        },
+
+        /**
+         * Проверка, имеет ли пользователь административные права (admin или user)
+         */
+        hasAdminOrUserPrivileges() {
+            return this.isAdmin || this.isUser;
         },
 
         /**
@@ -143,8 +149,8 @@ export default {
                 },
             ];
 
-            // Conditionally include 'Files' only for admins
-            if (this.isAdmin) {
+            // Add 'Files' section only for admin and user roles (excluding helper)
+            if (this.hasAdminOrUserPrivileges) {
                 baseNavigation.unshift({
                     route: 'Files',
                     section: 'Platform',
@@ -153,20 +159,19 @@ export default {
                 });
             }
 
-            // Admin-specific navigation items
-            const adminNavigation = [
+            // Admin and Helper specific navigation items
+            const adminHelperNavigation = [
                 {
                     route: 'Dashboard',
                     section: 'Admin',
                     title: this.$t('locations.settings'),
                     icon: 'settings',
                 },
-                // Добавьте другие админские маршруты по мере необходимости
             ];
 
-            // Include admin navigation items if the user has admin privileges
-            if (this.hasAdminPrivileges) {
-                return [...baseNavigation, ...adminNavigation];
+            // Include admin or helper navigation items if the user has the necessary privileges
+            if (this.isAdmin || this.isHelper) {
+                return [...baseNavigation, ...adminHelperNavigation];
             }
 
             return baseNavigation;
